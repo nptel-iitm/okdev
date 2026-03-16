@@ -50,6 +50,12 @@ All agent skills live in `.claude/skills/<skill-name>/SKILL.md`:
 6. Tests must pass before merge
 7. Tech lead agent monitors the board and drives completion
 
+## Operational Rules
+- **Docker for all installations**: Never install tools directly on the host via pip, npm -g, apt-get, etc. Always use `docker run` with the appropriate image. The host stays clean.
+- **Unbuffered output for background commands**: When running any command in the background, always use unbuffered output (`stdbuf -oL`, `PYTHONUNBUFFERED=1`, `python3 -u`, `node --no-warnings` with pipe, etc.) so progress is visible in real time.
+- **Timeout must match sleep duration**: When a command includes sleep/wait loops, set the tool timeout to at least the total possible sleep duration. A 300s wait loop needs timeout >= 300000ms.
+- **Audio input support**: Requirements may come as audio files. Use Whisper (via Docker: `docker run --rm -v ...:/data openai/whisper ...`) for speech-to-text transcription.
+
 ## When Blocked
 1. Log the blocker clearly
 2. Attempt ONE reasonable alternative

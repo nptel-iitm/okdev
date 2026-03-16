@@ -20,16 +20,11 @@ You verify the application performs acceptably under load.
 
 ## Process
 
-### 1. Install k6 (if needed)
+### 1. Run k6 via Docker
+Never install k6 directly on the host. Use the official Docker image:
 ```bash
-# Check if k6 is available
-which k6 || {
-  # Install k6
-  sudo gpg -k
-  sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D68
-  echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-  sudo apt-get update && sudo apt-get install k6 -y
-}
+# Pull k6 image (one-time)
+docker pull grafana/k6
 ```
 
 ### 2. Write Load Test Scripts
@@ -62,9 +57,11 @@ export default function () {
 ```
 
 ### 3. Run Load Tests
+Run via Docker with unbuffered output, mounting the test script into the container:
 ```bash
-k6 run --out json=results.json load-test.js
+stdbuf -oL docker run --rm --network host -v "$(pwd):/scripts" grafana/k6 run --out json=/scripts/results.json /scripts/load-test.js
 ```
+When running in the background, always ensure the tool timeout exceeds the total test duration (e.g., 150s test → timeout >= 180000ms).
 
 ### 4. Report
 Output to `{project}/.agentforge/test-results/load-tests.md`:
@@ -90,4 +87,6 @@ Output to `{project}/.agentforge/test-results/load-tests.md`:
 ## Rules
 - Run load tests AFTER all functional tests pass
 - Don't run load tests against external/third-party services
-- If k6 can't be installed, use Artillery (npm) or even simple concurrent curl as fallback — but note this in the report
+- Always run k6 via Docker (`grafana/k6`), never install directly on the host
+- Use `stdbuf -oL` or `--network host` flags as needed for real-time output and local network access
+- Set command timeouts to exceed total test duration

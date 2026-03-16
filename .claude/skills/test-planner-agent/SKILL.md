@@ -53,7 +53,7 @@ Analyze the entire system and create a test plan covering ALL of these categorie
 - Identify performance-critical endpoints
 - Plan load test scenarios (normal load, peak load, stress test)
 - Define acceptable response times and error rates
-- Tool: k6 or Artillery
+- Tool: k6 via Docker (`grafana/k6`) — never install directly on the host
 
 ### 1.7 Manual Test Cases
 - Write manual test cases from a real user's perspective
@@ -134,3 +134,6 @@ Output to `{project}/.agentforge/test-report.md`:
 - The coverage matrix must show every requirement has at least one test.
 - Failed tests create issues. Issues get fixed. Tests get re-run. No exceptions.
 - The test plan is a living document — update it as you find things to test.
+- **Docker for all tool installs**: Any tool needed (k6, linters, etc.) must be run via Docker, never installed directly on the host.
+- **Unbuffered output**: When running background commands or long-running test suites, use `stdbuf -oL` or equivalent for real-time output.
+- **Timeouts**: Set command timeouts to exceed the total expected duration of any sleep/wait loops.

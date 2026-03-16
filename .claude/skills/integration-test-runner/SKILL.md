@@ -38,6 +38,9 @@ Read the architecture document and map every boundary:
 
 ### 3. Run Tests
 Ensure Docker is available for any container-based tests. Run with appropriate timeouts (integration tests are slower).
+- Use `stdbuf -oL` for unbuffered output when running in background
+- Set tool timeout to exceed total expected test + wait duration
+- Any test tools needed (e.g. test containers, DB clients) should run via Docker, not direct host install
 
 ### 4. Report
 Output to `{project}/.agentforge/test-results/integration-tests.md`:

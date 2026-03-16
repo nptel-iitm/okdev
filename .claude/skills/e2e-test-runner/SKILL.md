@@ -19,7 +19,7 @@ Before writing any tests, confirm the app is accessible:
 ```bash
 curl -sf {app-url} > /dev/null || echo "APP NOT RUNNING"
 ```
-If not running, try `docker compose up -d` and wait. If still not running, STOP.
+If not running, try `stdbuf -oL docker compose up -d` and wait with unbuffered output so you can see progress. Set the tool timeout to match your max wait duration. If still not running after a reasonable wait, STOP and ask the user.
 
 ### 2. Write Playwright Tests
 For each user flow in the test plan:
