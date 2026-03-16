@@ -46,6 +46,22 @@ If the project involves UI, also spawn the **ui-designer-agent**:
 - Input: requirements + architecture
 - Output: UI design decisions, component hierarchy, page layouts
 
+### Phase 2.5: Tech Stack Confirmation
+Before proceeding to implementation, confirm the tech stack with the user:
+- If the user specified a tech stack in the requirements, acknowledge it and proceed.
+- If NOT specified, propose **Python/Django** as the default (with rationale), along with any other technologies the architect recommended.
+- Present the full stack as a clear table (backend, frontend, database, testing, deployment) and **wait for user approval** before moving on.
+- If the user requests changes, update `{project}/.agentforge/architecture.md` accordingly.
+
+**Default stack (when not specified):**
+| Layer | Default | Notes |
+|-------|---------|-------|
+| Backend | Python / Django | Use wherever it makes sense |
+| Database | PostgreSQL | Via Docker |
+| Frontend | Django templates or React (based on UI complexity) | Confirm with user |
+| Testing | pytest, Playwright | |
+| Deployment | Docker Compose | |
+
 ### Phase 3: Project Setup on GitLab
 Spawn the **tech-lead-agent**:
 - Create a GitLab project under the `agentforge` group
