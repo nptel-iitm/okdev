@@ -19,12 +19,12 @@ This system uses a hub-and-spoke model:
 - Agents communicate through GitLab (issues, MRs, comments) and local files
 
 ## Agent Skills Location
-All agent skills live in `.claude/skills/` with the following structure:
-- `orchestration/` — master orchestrator, requirements, architect
-- `development/` — tech lead, dev agents, code review
-- `testing/` — test planner, all test runners
-- `design/` — UI designer, UI scorer
-- `delivery/` — delivery agent, report generator
+All agent skills live in `.claude/skills/<skill-name>/SKILL.md`:
+- **Orchestration**: `kickoff`, `requirements-agent`, `architect-agent`
+- **Development**: `tech-lead-agent`, `dev-agent`, `code-review-agent`
+- **Testing**: `test-planner-agent`, `unit-test-runner`, `integration-test-runner`, `e2e-test-runner`, `ui-screenshot-scorer`, `load-tester`, `manual-spot-checker`
+- **Design**: `ui-designer-agent`
+- **Delivery**: `delivery-agent`
 
 ## Coding Standards
 - Write tests for all new code
