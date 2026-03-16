@@ -1,0 +1,36 @@
+- since there is lack of explainability in AI; we will always have a small doubt as to whether the final output is reilable or not. And that is OK. How do we tackle this? Tests. Extensive tests. from different perspectives. I want a full testing ecosystem which (can be set of agents or something). Here is what I'm thinking:
+    - Test planner agent - understands the system and plans testing at a high level. it should include unit tests, integration tests, playwright end to end tests, everything
+    - Test coverage not just in terms of code but also in terms of functionality. We have a google login? That needs to be tested. How do we test? Ask the user to give you a dummy google login username and password.
+    - This test planner agent will not do the actual testing on its own. It will then call sub-agents for each testing task.
+    - The planner needs to follow software engineering practices. How do we usually test? 
+        - we write unit tests - by looking at our code
+	- we write manual tests from a user's PoV
+	- we write integration tests
+	- we write end to end deployment/running tests (for example, for most of my systems we use docker compose. some of our tests needs to make sure docker compose runs properly)
+	- load testing
+	- UI testing - for each page that we design, open them in chrome and take screenshots - and then see the screenshots to make sure: a. it looks elegant b. doesn't have any overlaps in text, etc etc. To do this we need an agent which does JUST this. take a screenshot of a page, and gives it a UI score. And keep a threshold of a score for each of our pages.
+	- anything else that i might have forgotten
+	The manual test part is important. being an AI, you might not be able to run manual tests effectively. But it's important to write them down. Then, after all other automated forms of testing are done, the last step of testing will be - manual testing using the chrome browser plugin (that is installed in your system). But you don't need to test ALL manual tests (since they would have already been covered in other automated tests). YOu just need to do a random check of maybe 10 manual tests. Like a real user. Without any spoofing or bypasses.
+    - The test planner's goal is to make sure our product is being tested as per industry standards, and does not need ANY manual intervention after that. Of course, there will be manual testing at the end. But we should not find any bugs there.
+- Master planning agent - since each project might have different requirements, the master planning agent needs to make a high level plan of the sotware development process
+    - Step 1 - gather requirements, OR read the folder for requirements. resolve any ambiguities.
+    - Step 2 - make a software enginnering plan (as if you're a real team. You are a real team, just of agents, not humans. That's even better!)
+    - Step 3 - execute, test, file bugs, repeat, etc. Do anything and everything required. Use necessary tools to do this (will get to that later)
+    - Step 4 (part of the test planner itself) - manual test
+    - Step 5 - deliver to the customer with a detailed report (with a summary section).
+- Environment set up
+    - Once the master planning is done, you need to make sure the system has everything needed for the task. Make sure you are able to install packages on the system if needed. Make sure the chrome browser plugin works (always do this before task start). Test out your system environment so that later while actually doing the task, you don't face any roadblocks.
+- No compromise
+    - Your goal is to give me a full and final solution. But, DO NOT TAKE SHORTCUTS. If you think the best way to test is via the chrome plugin, and it's not available, pause and ask me to help set it up. It might simply need a computer restart. I am here to support you, not test you. We are a team. I have noticed in the past, when something does not work and you seem to get frustrated, you try to finish the task anyway with sub-optimal tools. Don't do that.
+- UI designing
+    - Whenever we are making a new website or page or anything, we will design some nice UIs. Use google stitch to do this if possible. If not, use the next best thing available.
+    - if you are adding a page to an existing product, see the existing pages and take a call on whether you need to make new designs or not.
+    - if you do need to make new designs, make sure they are compatible with our older ones.
+- version control - use our very own gitlab instance. FIRST TIME SET UP - you will need to set up a local gitlab instance. use a simple docker set up of gitlab and install it locally.
+- issue tracking - use our local gitlab instance
+- Create pull requests, do reviews, and merge them. Follow the sofwtare engineering cycle
+- Create issues when you see them, and fix them if they need to be fixed for our problem statement - somewhere in your task cycle.
+- Tech lead agent --- i think it will be better to have a tech lead agent which just tracks the gitlab board. So the master planning agent maeks the high level plan, another agent will convert it into gitlab tickets etc, and the tech lead agent will lead the coding etc - until the gitlab board looks good for production
+
+
+You get the idea. 

@@ -1,0 +1,47 @@
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: agentforge-gitlab
+    hostname: gitlab.local
+    restart: unless-stopped
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # External URL
+        external_url 'http://gitlab.local:8929'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+
+        # Reduce memory footprint for local dev use
+        puma['worker_processes'] = 2
+        sidekiq['concurrency'] = 5
+        prometheus_monitoring['enable'] = false
+        gitlab_rails['env'] = { 'MALLOC_ARENA_MAX' => '2' }
+
+        # Disable services we don't need
+        registry['enable'] = false
+        gitlab_kas['enable'] = false
+
+        # Git settings
+        gitlab_rails['initial_root_password'] = 'AgentForge2024!'
+        gitlab_rails['display_initial_root_password'] = true
+
+        # Performance tuning
+        gitaly['configuration'] = { concurrency: [{ rpc: '/gitaly.SmartHTTPService/PostReceivePack', max_per_repo: 3 }] }
+    ports:
+      - "8929:8929"    # HTTP
+      - "2224:22"      # SSH
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    shm_size: '256m'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8929/-/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+      start_period: 300s
+
+volumes:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:

@@ -1,0 +1,6 @@
+node_modules/
+.gitlab-token
+.agentforge/test-results/
+*.log
+.mcp.json
+.env
