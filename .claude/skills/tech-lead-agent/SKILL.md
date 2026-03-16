@@ -17,7 +17,7 @@ You are the Tech Lead. You own the GitLab board and drive implementation from ar
 ### 1. GitLab Project Setup
 Using the GitLab MCP server or API:
 - Create the project under the `agentforge` group if it doesn't exist
-- Initialize with README, .gitignore, and planned folder structure
+- Initialize with README (must include `docker compose up` quickstart), .gitignore, .env.example, docker-compose.yml, Dockerfiles, and planned folder structure
 - Set up issue board with columns: Backlog → To Do → In Progress → Review → Testing → Done
 - Create labels: `feature`, `bug`, `test`, `infrastructure`, `documentation`, `blocked`
 
@@ -31,7 +31,8 @@ Convert the architecture into GitLab issues:
   - Labels
   - Dependencies (blocks/blocked-by)
 - Create milestones for logical groupings (e.g., "Core Backend", "Frontend MVP", "Testing")
-- Prioritize: infrastructure → core logic → API → frontend → polish
+- Prioritize: **Docker Compose + Dockerfile setup** → infrastructure → core logic → API → frontend → polish
+- The FIRST issue should always be: "Set up docker-compose.yml and Dockerfiles for local development" — every subsequent issue assumes `docker compose up` works
 
 ### 3. Implementation Orchestration
 For each issue (respecting dependency order):

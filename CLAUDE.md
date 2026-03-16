@@ -32,6 +32,7 @@ All agent skills live in `.claude/skills/<skill-name>/SKILL.md`:
 - Create feature branches, never commit directly to main
 - All changes go through MRs with code review
 - Follow the language/framework conventions of the project being built
+- **Docker Compose for local dev**: Every project must have a `docker-compose.yml` that runs the full stack locally. README setup instructions must include a `docker compose up` path. No "install X globally" instructions — everything runs in containers.
 
 ## Testing Standards
 - Unit tests: Cover all business logic

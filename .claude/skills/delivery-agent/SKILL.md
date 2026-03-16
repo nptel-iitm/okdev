@@ -77,11 +77,18 @@ Write to `{project}/.agentforge/delivery-report.md`:
 ---
 
 ### Deployment Instructions
-{Step-by-step instructions to deploy the application}
-1. Prerequisites
-2. Environment setup
-3. Build steps
-4. Run steps
+The primary local setup path must be Docker Compose. Instructions should look like:
+```
+1. Clone the repo
+2. Copy .env.example to .env and fill in values
+3. docker compose up
+4. Open http://localhost:XXXX
+```
+Then optionally include additional details:
+- Prerequisites (Docker, Docker Compose)
+- Environment variables reference
+- How to run tests
+- How to access logs
 5. Verification steps
 
 ---
