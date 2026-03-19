@@ -38,7 +38,7 @@ for (const vp of viewports) {
 ```
 
 ### 2. Score Each Screenshot
-For each screenshot, evaluate using Claude's vision capabilities (read the screenshot file):
+For each screenshot, evaluate using the model's image analysis capabilities (read the screenshot file):
 
 **Scoring Criteria (each out of 10, averaged):**
 1. **Visual Hierarchy**: Is there a clear content hierarchy? Can you tell what's most important?

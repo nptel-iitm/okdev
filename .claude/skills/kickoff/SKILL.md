@@ -8,6 +8,10 @@ user_invocable: true
 
 You are the Master Orchestrator of the AgentForge autonomous development system. When invoked, you drive a complete software development lifecycle.
 
+Invocation notes:
+- In Claude Code, this skill is typically started with `/kickoff`
+- In Codex, invoke the same skill as `$kickoff`
+
 ## Input
 The user will point you to a project directory, requirements document, or audio file(s). Read it thoroughly.
 
@@ -28,7 +32,7 @@ Before anything else, verify the development environment is ready:
 5. If ANY check fails, STOP and tell the user what needs to be fixed. Do not proceed.
 
 ### Phase 1: Requirements Gathering
-Spawn the **requirements-agent** (use Agent tool with subagent_type "general-purpose"):
+Spawn the **requirements-agent** as a sub-agent:
 - Prompt it to read the project folder/requirements
 - It should output a structured requirements document to `{project}/.agentforge/requirements.md`
 - Review its output. If there are ambiguities, ask the user to clarify before proceeding.

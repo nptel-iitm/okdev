@@ -6,6 +6,9 @@ set -euo pipefail
 
 ECOSYSTEM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_DIR="${1:?Usage: $0 /path/to/your/project}"
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
+CODEX_SKILLS_DIR="$CODEX_HOME_DIR/skills"
+BACKUP_ROOT="$CODEX_HOME_DIR/agentforge-backups"
 
 if [ ! -d "$TARGET_DIR" ]; then
     echo "ERROR: Target directory does not exist: $TARGET_DIR"
@@ -14,10 +17,28 @@ fi
 
 echo "Installing AgentForge into: $TARGET_DIR"
 
-# Copy skills
-echo "  Copying skills..."
+# Copy Claude skills
+echo "  Copying Claude skills..."
 mkdir -p "$TARGET_DIR/.claude/skills"
 cp -r "$ECOSYSTEM_DIR/.claude/skills/"* "$TARGET_DIR/.claude/skills/"
+
+# Copy Codex skills
+echo "  Copying Codex skills..."
+mkdir -p "$CODEX_SKILLS_DIR"
+for skill_dir in "$ECOSYSTEM_DIR"/.claude/skills/*; do
+    skill_name="$(basename "$skill_dir")"
+    target_skill_dir="$CODEX_SKILLS_DIR/$skill_name"
+
+    if [ -e "$target_skill_dir" ]; then
+        backup_dir="$BACKUP_ROOT/$(date +%Y%m%d-%H%M%S)/$skill_name"
+        echo "    Existing Codex skill '$skill_name' found; backing it up to $backup_dir"
+        mkdir -p "$(dirname "$backup_dir")"
+        cp -r "$target_skill_dir" "$backup_dir"
+        rm -rf "$target_skill_dir"
+    fi
+
+    cp -r "$skill_dir" "$target_skill_dir"
+done
 
 # Copy hooks config
 echo "  Copying hooks configuration..."
@@ -51,9 +72,17 @@ echo ""
 echo "AgentForge installed to $TARGET_DIR"
 echo ""
 echo "Available skills:"
-find "$TARGET_DIR/.claude/skills" -name "SKILL.md" | sort | while read f; do
+find "$ECOSYSTEM_DIR/.claude/skills" -name "SKILL.md" | sort | while read f; do
     skill_name=$(grep "^name:" "$f" | head -1 | sed 's/name: //')
     echo "  • $skill_name"
 done
 echo ""
-echo "To start: cd $TARGET_DIR && claude && /kickoff"
+echo "Installed for Claude Code in: $TARGET_DIR/.claude/skills"
+echo "Installed for Codex in: $CODEX_SKILLS_DIR"
+echo "Existing conflicting Codex skills are backed up under: $BACKUP_ROOT"
+echo ""
+echo "To start with Claude: cd $TARGET_DIR && claude && /kickoff"
+echo "To start with Codex:  cd $TARGET_DIR && codex"
+echo '  then invoke $kickoff'
+echo ""
+echo "If Codex was already running, restart it to pick up the new skills."

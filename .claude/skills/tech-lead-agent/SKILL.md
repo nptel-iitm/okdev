@@ -37,7 +37,7 @@ Convert the architecture into GitLab issues:
 ### 3. Implementation Orchestration
 For each issue (respecting dependency order):
 - Move issue to "In Progress"
-- Spawn a **dev-agent** via the Agent tool with:
+- Spawn a **dev-agent** as a sub-agent with:
   - The issue details
   - The relevant architecture section
   - The repo URL and branch naming convention: `feature/{issue-number}-{short-description}`
