@@ -40,7 +40,7 @@ Analyze the entire system and create a test plan covering ALL of these categorie
 - Plan to screenshot each at key viewport sizes (desktop: 1920x1080, tablet: 768x1024, mobile: 375x812)
 - Each screenshot will be scored by the UI Scorer Agent
 - Threshold: 7/10 minimum score
-- Tool: Playwright screenshots + Claude vision
+- Tool: Playwright screenshots + model image analysis
 
 ### 1.5 Docker/Deployment Tests
 - Plan tests that verify the system starts correctly via docker compose

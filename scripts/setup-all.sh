@@ -52,8 +52,8 @@ find "$ECOSYSTEM_DIR/.claude/skills" -name "SKILL.md" | sort | while read f; do
 done
 echo ""
 echo "To start a project:"
-echo "  cd your-project-dir"
-echo "  claude"
-echo "  > /kickoff"
+echo "  Claude: cd your-project-dir && claude && /kickoff"
+echo "  Codex:  cd your-project-dir && codex"
+echo "          then invoke \$kickoff"
 echo ""
 echo "GitLab: http://gitlab.local:8929 (root / AgentForge2024!)"

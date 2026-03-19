@@ -14,17 +14,19 @@
 ## Agent Architecture
 This system uses a hub-and-spoke model:
 - The **Master Orchestrator** (`/kickoff`) coordinates all phases
-- Specialized agents are invoked as Claude Code sub-agents via the Agent tool
+- Specialized agents are invoked as sub-agents by the active runtime (Claude Code or Codex)
 - Each agent has a single responsibility and clear inputs/outputs
 - Agents communicate through GitLab (issues, MRs, comments) and local files
 
 ## Agent Skills Location
-All agent skills live in `.claude/skills/<skill-name>/SKILL.md`:
+The source of truth for agent skills in this repo is `.claude/skills/<skill-name>/SKILL.md`:
 - **Orchestration**: `kickoff`, `requirements-agent`, `architect-agent`
 - **Development**: `tech-lead-agent`, `dev-agent`, `code-review-agent`
 - **Testing**: `test-planner-agent`, `unit-test-runner`, `integration-test-runner`, `e2e-test-runner`, `ui-screenshot-scorer`, `load-tester`, `manual-spot-checker`
 - **Design**: `ui-designer-agent`
 - **Delivery**: `delivery-agent`
+
+For Codex, install the same skill folders into `${CODEX_HOME:-~/.codex}/skills/`.
 
 ## Coding Standards
 - Write tests for all new code

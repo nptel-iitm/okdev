@@ -6,6 +6,8 @@ set -euo pipefail
 
 ECOSYSTEM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_DIR="${1:?Usage: $0 /path/to/your/project}"
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
+CODEX_SKILLS_DIR="$CODEX_HOME_DIR/skills"
 
 if [ ! -d "$TARGET_DIR" ]; then
     echo "ERROR: Target directory does not exist: $TARGET_DIR"
@@ -14,10 +16,15 @@ fi
 
 echo "Installing AgentForge into: $TARGET_DIR"
 
-# Copy skills
-echo "  Copying skills..."
+# Copy Claude skills
+echo "  Copying Claude skills..."
 mkdir -p "$TARGET_DIR/.claude/skills"
 cp -r "$ECOSYSTEM_DIR/.claude/skills/"* "$TARGET_DIR/.claude/skills/"
+
+# Copy Codex skills
+echo "  Copying Codex skills..."
+mkdir -p "$CODEX_SKILLS_DIR"
+cp -r "$ECOSYSTEM_DIR/.claude/skills/"* "$CODEX_SKILLS_DIR/"
 
 # Copy hooks config
 echo "  Copying hooks configuration..."
@@ -51,9 +58,16 @@ echo ""
 echo "AgentForge installed to $TARGET_DIR"
 echo ""
 echo "Available skills:"
-find "$TARGET_DIR/.claude/skills" -name "SKILL.md" | sort | while read f; do
+find "$ECOSYSTEM_DIR/.claude/skills" -name "SKILL.md" | sort | while read f; do
     skill_name=$(grep "^name:" "$f" | head -1 | sed 's/name: //')
     echo "  • $skill_name"
 done
 echo ""
-echo "To start: cd $TARGET_DIR && claude && /kickoff"
+echo "Installed for Claude Code in: $TARGET_DIR/.claude/skills"
+echo "Installed for Codex in: $CODEX_SKILLS_DIR"
+echo ""
+echo "To start with Claude: cd $TARGET_DIR && claude && /kickoff"
+echo "To start with Codex:  cd $TARGET_DIR && codex"
+echo '  then invoke $kickoff'
+echo ""
+echo "If Codex was already running, restart it to pick up the new skills."
