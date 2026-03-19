@@ -4,3 +4,4 @@ node_modules/
 *.log
 .mcp.json
 .env
+plan.md
