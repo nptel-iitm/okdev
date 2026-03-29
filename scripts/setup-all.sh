@@ -12,6 +12,7 @@ echo ""
 echo "[1/5] Making scripts executable..."
 chmod +x "$ECOSYSTEM_DIR"/hooks/*.sh
 chmod +x "$ECOSYSTEM_DIR"/infrastructure/gitlab/setup-gitlab.sh
+chmod +x "$ECOSYSTEM_DIR"/infrastructure/mcp-servers/configure-stitch.sh
 chmod +x "$ECOSYSTEM_DIR"/infrastructure/mcp-servers/setup-mcp.sh
 chmod +x "$ECOSYSTEM_DIR"/scripts/*.sh
 echo "  Done."

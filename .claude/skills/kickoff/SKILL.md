@@ -26,10 +26,11 @@ Then feed the transcription into the requirements-agent alongside any other mate
 ### Phase 0: Environment Validation
 Before anything else, verify the development environment is ready:
 1. Check Docker is running: `docker info`
-2. Check GitLab is accessible: `curl -sf http://gitlab.local:8929/-/readiness`
-3. Check the GitLab API token exists and works: read `infrastructure/gitlab/.gitlab-token` and test it
+2. Check GitLab is accessible. Prefer the Docker health check on `agentforge-gitlab`; if needed, fall back to `curl -sf http://localhost:8929/users/sign_in`.
+3. Check the GitLab API token exists and works. Read the token from the project's `.mcp.json` GitLab server config and test it against the configured GitLab API URL.
 4. Check Playwright is available: `npx playwright --version`
-5. If ANY check fails, STOP and tell the user what needs to be fixed. Do not proceed.
+5. If `.mcp.json` is missing or does not contain a working GitLab MCP config, STOP and tell the user to rerun AgentForge project installation for that project.
+6. If ANY check fails, STOP and tell the user what needs to be fixed. Do not proceed.
 
 ### Phase 1: Requirements Gathering
 Spawn the **requirements-agent** as a sub-agent:
@@ -54,7 +55,7 @@ If the project involves UI, also spawn the **ui-designer-agent**:
 Before proceeding to implementation, confirm the tech stack with the user:
 - If the user specified a tech stack in the requirements, acknowledge it and proceed.
 - If NOT specified, propose **Python/Django** as the default (with rationale), along with any other technologies the architect recommended.
-- Present the full stack as a clear table (backend, frontend, database, testing, deployment) and **wait for user approval** before moving on.
+- Present the full stack in a terminal-friendly format (short sections or bullets covering backend, frontend, database, testing, and deployment) and **wait for user approval** before moving on.
 - If the user requests changes, update `{project}/.agentforge/architecture.md` accordingly.
 
 **Default stack (when not specified):**

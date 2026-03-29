@@ -9,6 +9,7 @@
 ## Infrastructure
 - **GitLab**: Local instance at `http://gitlab.local:8929` (Docker). All repos, issues, MRs, and boards live here.
 - **GitLab API Token**: Stored in `infrastructure/gitlab/.gitlab-token`
+- **Optional Stitch API Key**: Store in `infrastructure/mcp-servers/.env.local`
 - **MCP Servers**: Configured in `.mcp.json` at project root.
 
 ## Agent Architecture
@@ -58,6 +59,7 @@ For Codex, install the same skill folders into `${CODEX_HOME:-~/.codex}/skills/`
 - **Unbuffered output for background commands**: When running any command in the background, always use unbuffered output (`stdbuf -oL`, `PYTHONUNBUFFERED=1`, `python3 -u`, `node --no-warnings` with pipe, etc.) so progress is visible in real time.
 - **Timeout must match sleep duration**: When a command includes sleep/wait loops, set the tool timeout to at least the total possible sleep duration. A 300s wait loop needs timeout >= 300000ms.
 - **Audio input support**: Requirements may come as audio files. Use Whisper (via Docker: `docker run --rm -v ...:/data openai/whisper ...`) for speech-to-text transcription.
+- **Terminal-safe formatting**: Assume the active terminal may not render Markdown tables or rich layout correctly. Prefer short sections, bullets, and fenced code blocks for terminal-facing output. Use tables only in files that are intended for Markdown preview, and provide a plain-text summary when showing results in the terminal.
 
 ## When Blocked
 1. Log the blocker clearly
