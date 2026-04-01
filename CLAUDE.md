@@ -24,6 +24,7 @@ The source of truth for agent skills in this repo is `.claude/skills/<skill-name
 - **Orchestration**: `kickoff`, `requirements-agent`, `architect-agent`
 - **Development**: `tech-lead-agent`, `dev-agent`, `code-review-agent`
 - **Testing**: `test-planner-agent`, `unit-test-runner`, `integration-test-runner`, `e2e-test-runner`, `ui-screenshot-scorer`, `load-tester`, `manual-spot-checker`
+- **QA / Investigation**: `replicate-issue`, `replicate-multiple-issues`
 - **Design**: `ui-designer-agent`
 - **Delivery**: `delivery-agent`
 
