@@ -23,8 +23,29 @@ Then feed the transcription into the requirements-agent alongside any other mate
 
 ## Execution Phases
 
-### Phase 0: Environment Validation
-Before anything else, verify the development environment is ready:
+### Phase 0: Workspace Selection
+Before any other phase, ask the user how they want to work:
+
+> **Where should I work?**
+> 1. **Current directory** — work directly in this folder
+> 2. **Fresh clone** — clone the repo into a temporary directory and work there
+
+Wait for the user's answer. Then:
+
+- **Option 1 (current directory):** Confirm the working directory and proceed to Phase 1.
+- **Option 2 (fresh clone):**
+  1. Determine the Git remote URL of the current repo (`git remote get-url origin`). If there is no remote, ask the user for the repo URL.
+  2. Create a temp workspace: `mktemp -d /tmp/agentforge-XXXXXX`
+  3. Clone the repo there: `git clone <url> <temp-dir>/project`
+  4. Change the working directory to the cloned repo for all subsequent phases.
+  5. Inform the user of the path so they can inspect it later.
+
+Store the chosen workspace path in `{workspace}/.agentforge/workspace-info.txt` (create the `.agentforge/` dir if needed) so later phases and sub-agents know the root.
+
+From this point on, all `{project}` references in later phases resolve to the chosen workspace path.
+
+### Phase 1: Environment Validation
+Verify the development environment is ready:
 1. Check Docker is running: `docker info`
 2. Check GitLab is accessible. Prefer the Docker health check on `agentforge-gitlab`; if needed, fall back to `curl -sf http://localhost:8929/users/sign_in`.
 3. Check the GitLab API token exists and works. Read the token from the project's `.mcp.json` GitLab server config and test it against the configured GitLab API URL.
@@ -32,15 +53,15 @@ Before anything else, verify the development environment is ready:
 5. If `.mcp.json` is missing or does not contain a working GitLab MCP config, STOP and tell the user to rerun AgentForge project installation for that project.
 6. If ANY check fails, STOP and tell the user what needs to be fixed. Do not proceed.
 
-### Phase 1: Requirements Gathering
+### Phase 2: Requirements Gathering
 Spawn the **requirements-agent** as a sub-agent:
 - Prompt it to read the project folder/requirements
 - It should output a structured requirements document to `{project}/.agentforge/requirements.md`
 - Review its output. If there are ambiguities, ask the user to clarify before proceeding.
 
-### Phase 2: Architecture & Design
+### Phase 3: Architecture & Design
 Spawn the **architect-agent**:
-- Input: the requirements document from Phase 1
+- Input: the requirements document from Phase 2
 - Output: `{project}/.agentforge/architecture.md` containing:
   - System design (components, data flow)
   - Tech stack decisions with rationale
@@ -51,7 +72,7 @@ If the project involves UI, also spawn the **ui-designer-agent**:
 - Input: requirements + architecture
 - Output: UI design decisions, component hierarchy, page layouts
 
-### Phase 2.5: Tech Stack Confirmation
+### Phase 3.5: Tech Stack Confirmation
 Before proceeding to implementation, confirm the tech stack with the user:
 - If the user specified a tech stack in the requirements, acknowledge it and proceed.
 - If NOT specified, propose **Python/Django** as the default (with rationale), along with any other technologies the architect recommended.
@@ -67,7 +88,7 @@ Before proceeding to implementation, confirm the tech stack with the user:
 | Testing | pytest, Playwright | |
 | Deployment | Docker Compose | |
 
-### Phase 3: Project Setup on GitLab
+### Phase 4: Project Setup on GitLab
 Spawn the **tech-lead-agent**:
 - Create a GitLab project under the `agentforge` group
 - Set up the issue board (Backlog, To Do, In Progress, Review, Testing, Done)
@@ -75,7 +96,7 @@ Spawn the **tech-lead-agent**:
 - Prioritize and organize issues into milestones if needed
 - Initialize the repo with the planned folder structure, README, and CI config
 
-### Phase 4: Implementation
+### Phase 5: Implementation
 The tech-lead-agent drives this phase:
 - For each issue (in priority order), spawn a **dev-agent** to:
   - Create a feature branch
@@ -87,7 +108,7 @@ The tech-lead-agent drives this phase:
 - Merge when approved and tests pass
 - Multiple dev agents can work in parallel on independent issues
 
-### Phase 5: Testing
+### Phase 6: Testing
 Spawn the **test-planner-agent**:
 - Input: the full codebase, requirements, and architecture docs
 - It designs the complete test strategy and delegates to sub-agents:
@@ -96,12 +117,12 @@ Spawn the **test-planner-agent**:
   - E2E test runner (Playwright)
   - UI screenshot scorer (every page)
   - Load tester
-- Any failures create new GitLab issues and loop back to Phase 4
+- Any failures create new GitLab issues and loop back to Phase 5
 
-### Phase 6: Manual Spot-Check
+### Phase 7: Manual Spot-Check
 The test planner selects 10 random manual test cases and executes them using a real browser (Playwright in headed mode or browser MCP). These should simulate real user behavior — no spoofing, no bypasses.
 
-### Phase 7: Delivery
+### Phase 8: Delivery
 Spawn the **delivery-agent**:
 - Generate a comprehensive delivery report: `{project}/.agentforge/delivery-report.md`
   - Summary (executive-level, 3-5 sentences)
