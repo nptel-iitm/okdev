@@ -67,3 +67,7 @@ For Codex, install the same skill folders into `${CODEX_HOME:-~/.codex}/skills/`
 2. Attempt ONE reasonable alternative
 3. If still blocked, STOP and ask the user
 4. Never silently degrade quality to work around a problem
+
+## Universal Tools
+- For anything github, use the github cli (gh command)
+- For anything google (drive, gmail, chat - use the gws cli)
