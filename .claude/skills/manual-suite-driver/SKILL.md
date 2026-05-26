@@ -98,8 +98,7 @@ For each test file `T`:
      - If there are multiple issues, fix them **sequentially** (one fully fixed before
        the next), or delegate the batch to a single sub-agent running
        `/replicate-and-kickoff-multi`. Either way, isolate it in a sub-agent.
-   - After the fix(es) merge, **loop back to step (a)** and re-run `T` from scratch in
-     a new sub-agent.
+   - If any fix fails to merge or reports that it cannot reproduce/fix the issue, STOP and ask the user (per the Loop Guards). Otherwise, after the fix(es) merge, loop back to step (a) and re-run the test from scratch in a new sub-agent.
 
 3. Repeat (a)→(b) until `T` passes. Print `[i/N] <T> — PASS after K iteration(s)`.
 
