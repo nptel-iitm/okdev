@@ -121,9 +121,7 @@ Iterate:
    plus the list of any newly filed issue numbers.
 2. **Branch:**
    - **All pass** → the end goal is met. Go to Phase 3.
-   - **Any fail** → fix every newly filed issue via `/replicate-and-kickoff` in
-     isolated sub-agents (same handoff as Phase 1b), then **loop back to step 1** and
-     re-run the entire suite.
+   - **Any fail** → if the regression round limit (5 rounds) is reached, STOP and report which tests remain red. Otherwise, fix every newly filed issue via /replicate-and-kickoff in isolated sub-agents (same handoff as Phase 1b), then loop back to step 1 and re-run the entire suite.
 
 Repeat until a single full-suite run is fully green.
 
