@@ -38,6 +38,9 @@ For Codex, install the same skill folders into `${CODEX_HOME:-~/.codex}/skills/`
 - All changes go through MRs with code review
 - Follow the language/framework conventions of the project being built
 - **Docker Compose for local dev**: Every project must have a `docker-compose.yml` that runs the full stack locally. README setup instructions must include a `docker compose up` path. No "install X globally" instructions — everything runs in containers.
+- NEVER do sequential queries in for loops. Always do bulk queries when working with bulk data - including reads and writes.
+- Whenever running a local script or command - ensure to run in UNBUFFERED mode - and print progress (x out of y complete) whenever possible
+- whenever running scripts with atomic DB operations - ensure to log progress before said atomic operation starts, including a quick count of how many rows are going to be inserted/updated/etc.
 
 ## Testing Standards
 - Unit tests: Cover all business logic
