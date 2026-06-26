@@ -21,7 +21,7 @@ This system uses a hub-and-spoke model:
 
 ## Agent Skills Location
 The source of truth for agent skills in this repo is `.claude/skills/<skill-name>/SKILL.md`:
-- **Orchestration**: `kickoff`, `requirements-agent`, `architect-agent`
+- **Orchestration**: `kickoff`, `bugfix` (kickoff variant for fixing a bug on an existing project — skips architecture/tech-stack/project-setup phases), `requirements-agent`, `architect-agent`
 - **Development**: `tech-lead-agent`, `dev-agent`, `code-review-agent`
 - **Testing**: `test-planner-agent`, `unit-test-runner`, `integration-test-runner`, `e2e-test-runner`, `ui-screenshot-scorer`, `load-tester`, `manual-spot-checker`
 - **QA / Investigation**: `replicate-issue`, `replicate-multiple-issues`, `replicate-and-kickoff`, `replicate-and-kickoff-multi`

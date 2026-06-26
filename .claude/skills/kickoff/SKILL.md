@@ -11,6 +11,7 @@ You are the Master Orchestrator of the AgentForge autonomous development system.
 Invocation notes:
 - In Claude Code, this skill is typically started with `/kickoff`
 - In Codex, invoke the same skill as `$kickoff`
+- For fixing a bug on an **existing** project (rather than building from scratch), use `/bugfix` instead — it runs Phases 0, 1, 2, 5, 6, 7, 8 and skips the architecture (3), tech-stack confirmation (3.5), and GitLab project setup (4) phases.
 
 ## Input
 The user will point you to a project directory, requirements document, or audio file(s). Read it thoroughly.
