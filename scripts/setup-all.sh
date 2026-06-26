@@ -4,7 +4,7 @@ set -euo pipefail
 ECOSYSTEM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "============================================"
-echo "  AgentForge — Full System Setup"
+echo "  MegaDev — Full System Setup"
 echo "============================================"
 echo ""
 
@@ -43,7 +43,7 @@ bash "$ECOSYSTEM_DIR/hooks/env-validator.sh"
 
 echo ""
 echo "============================================"
-echo "  AgentForge Setup Complete!"
+echo "  MegaDev Setup Complete!"
 echo "============================================"
 echo ""
 echo "Directory structure:"
@@ -60,4 +60,4 @@ echo "             then invoke \$kickoff"
 echo ""
 echo "Note: Codex skills are installed by install-to-project.sh, not by setup-all.sh alone."
 echo ""
-echo "GitLab: http://gitlab.local:8929 (root / AgentForge2024!)"
+echo "GitLab: http://gitlab.local:8929 (root / MegaDev2024!)"

@@ -56,7 +56,7 @@ If adding to an existing product:
 - Flag any inconsistencies
 
 ## Output
-Write to `{project}/.agentforge/ui-design.md`
+Write to `{project}/.megadev/ui-design.md`
 
 ## Rules
 - If the project uses an existing design system, follow it strictly

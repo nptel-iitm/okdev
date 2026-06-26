@@ -1,6 +1,6 @@
 node_modules/
 .gitlab-token
-.agentforge/test-results/
+.megadev/test-results/
 *.log
 .mcp.json
 .env

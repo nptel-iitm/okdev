@@ -43,7 +43,7 @@ Ensure Docker is available for any container-based tests. Run with appropriate t
 - Any test tools needed (e.g. test containers, DB clients) should run via Docker, not direct host install
 
 ### 4. Report
-Output to `{project}/.agentforge/test-results/integration-tests.md`:
+Output to `{project}/.megadev/test-results/integration-tests.md`:
 ```markdown
 # Integration Test Results
 

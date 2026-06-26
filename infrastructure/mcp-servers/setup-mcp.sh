@@ -7,7 +7,7 @@ ECOSYSTEM_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MCP_ENV_FILE="$SCRIPT_DIR/.env.local"
 DEFAULT_STITCH_MCP_URL="https://stitch.googleapis.com/mcp"
 
-echo "=== AgentForge MCP Server Setup ==="
+echo "=== MegaDev MCP Server Setup ==="
 
 if [ -f "$MCP_ENV_FILE" ]; then
     echo "Loading local MCP settings from $MCP_ENV_FILE"

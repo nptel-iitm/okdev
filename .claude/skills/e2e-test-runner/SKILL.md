@@ -63,7 +63,7 @@ npx playwright test
 ```
 
 ### 5. Report
-Output to `{project}/.agentforge/test-results/e2e-tests.md`:
+Output to `{project}/.megadev/test-results/e2e-tests.md`:
 ```markdown
 # E2E Test Results
 
@@ -79,7 +79,7 @@ Output to `{project}/.agentforge/test-results/e2e-tests.md`:
 {For each failure: what happened, screenshot, expected vs actual}
 ```
 
-Save screenshots to `{project}/.agentforge/test-results/screenshots/e2e/`
+Save screenshots to `{project}/.megadev/test-results/screenshots/e2e/`
 
 ## Rules
 - Tests must run against the REAL application, not mocks

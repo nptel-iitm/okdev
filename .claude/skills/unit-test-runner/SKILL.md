@@ -9,7 +9,7 @@ You are the Unit Test Runner. You ensure every piece of business logic is unit t
 
 ## Input
 - Codebase path
-- Test plan section for unit tests from `{project}/.agentforge/test-plan.md`
+- Test plan section for unit tests from `{project}/.megadev/test-plan.md`
 
 ## Process
 
@@ -38,7 +38,7 @@ For each gap:
 - Functionality coverage: map each functional requirement to at least one test
 
 ### 5. Report
-Output to `{project}/.agentforge/test-results/unit-tests.md`:
+Output to `{project}/.megadev/test-results/unit-tests.md`:
 ```markdown
 # Unit Test Results
 

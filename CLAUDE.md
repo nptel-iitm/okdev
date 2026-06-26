@@ -1,4 +1,4 @@
-# AgentForge — Autonomous AI Development System
+# MegaDev — Autonomous AI Development System
 
 ## Philosophy
 - **No shortcuts.** If a tool or service is unavailable, STOP and ask the user. Never work around missing infrastructure with sub-optimal alternatives.

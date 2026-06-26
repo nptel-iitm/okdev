@@ -14,7 +14,7 @@ You will receive a path to a project directory, requirements file, or audio tran
 
 1. **Read everything available**: README, docs, existing code, config files, any `.md` or `.txt` files that describe what should be built. If there are audio files (`.mp3`, `.wav`, `.m4a`, `.ogg`, `.flac`), transcribe them first using Whisper via Docker:
    ```bash
-   docker run --rm -v "$(pwd):/data" --entrypoint whisper onerahmet/openai-whisper /data/{audio-file} --model base --output_dir /data/.agentforge/ --output_format txt
+   docker run --rm -v "$(pwd):/data" --entrypoint whisper onerahmet/openai-whisper /data/{audio-file} --model base --output_dir /data/.megadev/ --output_format txt
    ```
    Then read the resulting `.txt` transcription as input.
 
@@ -30,7 +30,7 @@ You will receive a path to a project directory, requirements file, or audio tran
 4. **Identify assumptions**: List assumptions you're making where the requirements don't explicitly state something.
 
 ## Output
-Write to `{project}/.agentforge/requirements.md`:
+Write to `{project}/.megadev/requirements.md`:
 
 ```markdown
 # Requirements Document

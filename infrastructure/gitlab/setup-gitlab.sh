@@ -3,11 +3,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GITLAB_URL="http://localhost:8929"
-GITLAB_ROOT_PASSWORD="AgentForge2024!"
-GITLAB_CONTAINER_NAME="agentforge-gitlab"
+GITLAB_ROOT_PASSWORD="MegaDev2024!"
+GITLAB_CONTAINER_NAME="megadev-gitlab"
 TOKEN_FILE="$SCRIPT_DIR/.gitlab-token"
 
-echo "=== AgentForge GitLab Setup ==="
+echo "=== MegaDev GitLab Setup ==="
 
 # Step 1: Add gitlab.local to /etc/hosts if not present
 if ! grep -q "gitlab.local" /etc/hosts 2>/dev/null; then
@@ -57,7 +57,7 @@ else
     TOKEN_RESPONSE="$(docker exec "$GITLAB_CONTAINER_NAME" gitlab-rails runner "
       user = User.find_by_username('root')
       token = user.personal_access_tokens.create!(
-        name: 'agentforge-token-api',
+        name: 'megadev-token-api',
         expires_at: 365.days.from_now,
         scopes: [:api]
       )
@@ -72,20 +72,20 @@ else
     echo "Token saved to $TOKEN_FILE"
 fi
 
-# Step 5: Create the AgentForge group
-echo "Setting up AgentForge group..."
+# Step 5: Create the MegaDev group
+echo "Setting up MegaDev group..."
 TOKEN="$(cat "$TOKEN_FILE" 2>/dev/null || echo "")"
 if [ -n "$TOKEN" ]; then
     if curl -sf --header "PRIVATE-TOKEN: $TOKEN" \
-        "$GITLAB_URL/api/v4/groups/agentforge" \
+        "$GITLAB_URL/api/v4/groups/megadev" \
         > /dev/null 2>&1; then
-        echo "AgentForge group already exists."
+        echo "MegaDev group already exists."
     else
         curl -sf --header "PRIVATE-TOKEN: $TOKEN" \
             "$GITLAB_URL/api/v4/groups" \
-            --data "name=AgentForge&path=agentforge&visibility=internal" \
+            --data "name=MegaDev&path=megadev&visibility=internal" \
             -o /dev/null 2>/dev/null
-        echo "AgentForge group created."
+        echo "MegaDev group created."
     fi
 fi
 

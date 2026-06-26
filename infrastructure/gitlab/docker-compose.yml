@@ -1,7 +1,7 @@
 services:
   gitlab:
     image: gitlab/gitlab-ce:18.9.2-ce.0
-    container_name: agentforge-gitlab
+    container_name: megadev-gitlab
     hostname: gitlab.local
     restart: unless-stopped
     environment:
@@ -21,7 +21,7 @@ services:
         gitlab_kas['enable'] = false
 
         # Git settings
-        gitlab_rails['initial_root_password'] = 'AgentForge2024!'
+        gitlab_rails['initial_root_password'] = 'MegaDev2024!'
         gitlab_rails['display_initial_root_password'] = true
 
         # Performance tuning

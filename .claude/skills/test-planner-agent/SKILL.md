@@ -9,8 +9,8 @@ You are the Test Planner Agent. You design and orchestrate the most thorough tes
 
 ## Input
 - Complete codebase (post-implementation)
-- Requirements document at `{project}/.agentforge/requirements.md`
-- Architecture document at `{project}/.agentforge/architecture.md`
+- Requirements document at `{project}/.megadev/requirements.md`
+- Architecture document at `{project}/.megadev/architecture.md`
 
 ## Phase 1: Test Strategy Design
 
@@ -63,7 +63,7 @@ Analyze the entire system and create a test plan covering ALL of these categorie
 
 ## Phase 2: Write Test Plan Document
 
-Output to `{project}/.agentforge/test-plan.md`:
+Output to `{project}/.megadev/test-plan.md`:
 
 ```markdown
 # Test Plan
@@ -121,7 +121,7 @@ After all automated tests pass:
 - Document results with screenshots
 
 ## Phase 5: Test Report
-Output to `{project}/.agentforge/test-report.md`:
+Output to `{project}/.megadev/test-report.md`:
 - Total tests: X passed, Y failed, Z skipped
 - Coverage by category
 - Any remaining issues
