@@ -74,9 +74,13 @@ Drive the fix through the existing GitLab project (no new project is created):
   - Implement the fix
   - Add/adjust tests that reproduce the bug and verify the fix
   - Create a Merge Request
-- Spawn **code-review-agent** to review the MR
-- Dev agent addresses review feedback
-- Merge when approved and tests pass
+- Drive the MR through the **review loop** (defined in tech-lead-agent § "The Review Loop"), repeating until approved:
+  1. Spawn a **fresh code-review-agent** to review the MR's current head. **APPROVED → merge, and the loop ends here.** CHANGES REQUESTED → continue.
+  2. Dev agent addresses every MUST FIX item.
+  3. Dev agent runs the full test suite — including the regression test for this bug — and gets it green.
+  4. Repeat from step 1 against the updated code.
+- Never merge on a single review round. Addressing feedback is not approval — only a fresh APPROVED verdict merges, and tests must be green before that re-review.
+- If the loop hits 3 rounds without converging, STOP and escalate to the user.
 - If the bug spans multiple independent issues, multiple dev agents can work in parallel.
 
 ### Phase 6: Testing
