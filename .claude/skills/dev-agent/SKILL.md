@@ -60,7 +60,7 @@ If the code review agent requests changes, work this cycle. Do NOT merge, and do
 
 1. **Read the feedback carefully.** Every **[MUST FIX]** item must be resolved. **[SUGGESTION]** and **[NITPICK]** items are optional, but reply to each one saying what you did or why you disagree.
 2. **Make the requested changes.**
-3. **Run the full test suite** — not just the tests you touched. Fixing review comments changes code the reviewer never commented on, and that is exactly how regressions land. If anything fails, fix it and re-run until green.
+3. **Run the full test suite** — not just the tests you touched. Changes made to address feedback can affect other parts of the codebase that the reviewer didn't comment on, which is exactly how regressions land. If anything fails, fix it and re-run until green.
 4. **Push to the same branch** once tests are green.
 5. **Comment on the MR** with what changed per item, plus the test-run summary as evidence that the branch is green.
 6. **Request a re-review.** The MR goes back to a fresh code-review-agent for another round against your updated code. Only an APPROVED verdict merges it.
