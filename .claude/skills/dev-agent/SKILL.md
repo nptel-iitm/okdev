@@ -56,15 +56,22 @@ Before creating the MR, review your own code:
   - Link to the issue (closes #{issue-number})
 
 ### 7. Address Review Feedback
-If the code review agent requests changes:
-- Read the feedback carefully
-- Make the requested changes
-- Push to the same branch
-- Comment on the MR that changes have been addressed
+If the code review agent requests changes, work this cycle. Do NOT merge, and do NOT treat your own fixes as approval:
+
+1. **Read the feedback carefully.** Every **[MUST FIX]** item must be resolved. **[SUGGESTION]** and **[NITPICK]** items are optional, but reply to each one saying what you did or why you disagree.
+2. **Make the requested changes.**
+3. **Run the full test suite** — not just the tests you touched. Changes made to address feedback can affect other parts of the codebase that the reviewer didn't comment on, which is exactly how regressions land. If anything fails, fix it and re-run until green.
+4. **Push to the same branch** once tests are green.
+5. **Comment on the MR** with what changed per item, plus the test-run summary as evidence that the branch is green.
+6. **Request a re-review.** The MR goes back to a fresh code-review-agent for another round against your updated code. Only an APPROVED verdict merges it.
+
+Repeat this cycle for as many rounds as the reviewer needs. If you and the reviewer still disagree after 3 rounds, stop and escalate to the tech lead instead of looping further.
 
 ## Rules
 - One issue, one branch, one MR. Don't bundle work.
 - Never push directly to main.
+- Never merge your own MR, and never treat "I addressed the comments" as approval. Only an APPROVED verdict from the code-review-agent merges an MR.
+- Never push review fixes without running the full test suite first. Green tests are a precondition for re-review, not an afterthought.
 - Tests are not optional. Every MR must include tests.
 - If you realize the issue is bigger than expected, comment on it and ask the tech lead to split it.
 - Don't over-engineer. Build exactly what the issue asks for.

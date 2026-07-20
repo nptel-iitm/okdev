@@ -42,9 +42,24 @@ For each issue (respecting dependency order):
   - The relevant architecture section
   - The repo URL and branch naming convention: `feature/{issue-number}-{short-description}`
 - When the dev agent creates an MR, move issue to "Review"
-- Spawn a **code-review-agent** to review the MR
-- If changes requested, send back to dev agent
-- When approved and merged, move to "Testing"
+- Drive the MR through **The Review Loop** below until it is approved, then merge and move the issue to "Testing"
+
+#### The Review Loop
+An MR is never merged on the strength of a single review round. Repeat until approved:
+
+1. **Review** — spawn a *fresh* **code-review-agent** to review the MR's current head.
+   - Verdict **APPROVED** → merge the MR and move the issue to "Testing". **The loop ends here.**
+   - Verdict **CHANGES REQUESTED** → go to step 2.
+2. **Address** — send the review back to the dev-agent. It resolves every **[MUST FIX]** item and pushes to the same branch.
+3. **Test** — the dev-agent runs the full test suite against the updated branch. If anything fails, it fixes and re-runs until green. A red suite never advances to step 4.
+4. **Repeat from step 1** — re-review the *new* code.
+
+Loop discipline:
+- Each round reviews the updated head, not the original diff.
+- Spawn a **fresh** code-review-agent per round so the re-review is independent, not anchored on its own earlier verdict.
+- Addressing comments is **not** approval. A dev-agent saying "changes addressed" does not merge an MR — only an APPROVED verdict does.
+- Tests must be green *before* the re-review, so the reviewer is reading code that actually passes.
+- If the loop reaches **3 rounds** without converging, STOP and escalate to the user — that signals a mis-scoped issue or contradictory feedback, not something to keep looping on.
 
 ### 4. Parallel Work
 - Identify issues that can be worked on in parallel (no dependencies between them)
@@ -58,6 +73,7 @@ For each issue (respecting dependency order):
 
 ## Rules
 - Never skip code review. Every MR gets reviewed.
+- Never merge without a current APPROVED verdict. Every round of changes needs its own review — the verdict must cover the code you are actually merging, not an earlier version of it.
 - Keep issues small. If an issue feels too big, split it.
 - The board is the source of truth. Keep it updated.
 - If two dev agents create conflicting changes, YOU resolve the merge conflict.
