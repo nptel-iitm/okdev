@@ -1,7 +1,7 @@
 interface:
-  display_name: "MegaDev Kickoff"
-  short_description: "Master orchestrator for the full MegaDev workflow"
-  default_prompt: "Use $kickoff to run the full MegaDev workflow for this project."
+  display_name: "OKDev Kickoff"
+  short_description: "Master orchestrator for the full OKDev workflow"
+  default_prompt: "Use $kickoff to run the full OKDev workflow for this project."
 
 policy:
   allow_implicit_invocation: true

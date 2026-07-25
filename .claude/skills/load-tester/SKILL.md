@@ -64,7 +64,7 @@ stdbuf -oL docker run --rm --network host -v "$(pwd):/scripts" grafana/k6 run --
 When running in the background, always ensure the tool timeout exceeds the total test duration (e.g., 150s test → timeout >= 180000ms).
 
 ### 4. Report
-Output to `{project}/.megadev/test-results/load-tests.md`:
+Output to `{project}/.okdev/test-results/load-tests.md`:
 ```markdown
 # Load Test Results
 

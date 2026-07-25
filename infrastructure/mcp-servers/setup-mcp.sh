@@ -7,7 +7,7 @@ ECOSYSTEM_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MCP_ENV_FILE="$SCRIPT_DIR/.env.local"
 DEFAULT_STITCH_MCP_URL="https://stitch.googleapis.com/mcp"
 
-echo "=== MegaDev MCP Server Setup ==="
+echo "=== OKDev MCP Server Setup ==="
 
 if [ -f "$MCP_ENV_FILE" ]; then
     echo "Loading local MCP settings from $MCP_ENV_FILE"
@@ -66,6 +66,7 @@ cat > "$ECOSYSTEM_DIR/.mcp.json" << MCPEOF
   }
 }
 MCPEOF
+chmod 600 "$ECOSYSTEM_DIR/.mcp.json"
 
 echo "MCP configuration written to $ECOSYSTEM_DIR/.mcp.json"
 

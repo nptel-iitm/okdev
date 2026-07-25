@@ -9,7 +9,7 @@ You package the completed project for delivery to the customer.
 
 ## Input
 - Completed, tested codebase
-- All documents in `{project}/.megadev/`:
+- All documents in `{project}/.okdev/`:
   - requirements.md
   - architecture.md
   - test-plan.md
@@ -32,7 +32,7 @@ Check against the requirements:
 - [ ] The application starts and runs successfully
 
 ### 3. Generate Delivery Report
-Write to `{project}/.megadev/delivery-report.md`:
+Write to `{project}/.okdev/delivery-report.md`:
 
 ```markdown
 # Delivery Report
