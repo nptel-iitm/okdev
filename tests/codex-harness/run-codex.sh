@@ -31,7 +31,12 @@
 #                      container as gitlab.local:8929, and pass the API token
 #                      in as GITLAB_TOKEN
 #   --docker           mount the host Docker socket, so a skill can run its
-#                      tooling in a container as its instructions require
+#                      tooling in a container as its instructions require.
+#                      Also mounts the workspace at its host path, because
+#                      containers the agent starts are siblings whose bind
+#                      mounts resolve against the host filesystem, and adds
+#                      host.docker.internal so the agent can reach ports its
+#                      own stack publishes.
 #   --no-network       cut the container off from the network (default: on;
 #                      Codex needs it to reach the API at all)
 #
@@ -83,6 +88,19 @@ if [ -e "$RUN_DIR" ]; then
 fi
 mkdir -p "$RUN_DIR/codexhome/skills" "$RUN_DIR/work" "$RUN_DIR/agenthome"
 
+# Where the workspace appears inside the container. Normally /work, which keeps
+# runs identical regardless of where the lab lives. With --docker it must be the
+# host path instead: containers the agent starts are siblings on the host
+# daemon, so their bind mounts resolve against the host filesystem. Mounting at
+# /work would make `docker compose` silently mount an empty directory - the
+# service starts, the code is not there, and the failure looks like a bug in
+# the application rather than in the harness.
+if [ "$DOCKER_SOCK" = "1" ]; then
+    WORK_PATH="$RUN_DIR/work"
+else
+    WORK_PATH="/work"
+fi
+
 # Private CODEX_HOME: auth is copied, never mounted, so a token refresh inside
 # the container cannot corrupt the host's credentials.
 cp "${CODEX_HOME:-$HOME/.codex}/auth.json" "$RUN_DIR/codexhome/auth.json"
@@ -92,7 +110,7 @@ cat > "$RUN_DIR/codexhome/config.toml" <<EOF
 model = "$MODEL"
 model_reasoning_effort = "$EFFORT"
 
-[projects."/work"]
+[projects."$WORK_PATH"]
 trust_level = "trusted"
 EOF
 
@@ -140,7 +158,9 @@ if [ ! -d "$RUN_DIR/work/.git" ]; then
     git -C "$RUN_DIR/work" -c user.email=harness@okdev.local -c user.name=harness \
         commit -qm "fixture baseline" --allow-empty
 fi
-BASE_SHA=$(git -C "$RUN_DIR/work" rev-parse HEAD)
+# A fixture may arrive with a repo that has no commits yet (a greenfield run
+# starts from an empty remote), so an unborn HEAD is not an error here.
+BASE_SHA=$(git -C "$RUN_DIR/work" rev-parse HEAD 2>/dev/null || echo "unborn")
 
 cp "$PROMPT_FILE" "$RUN_DIR/prompt.txt"
 
@@ -154,6 +174,9 @@ DOCKER_EXTRA=()
 if [ "$DOCKER_SOCK" = "1" ]; then
     DOCKER_EXTRA+=(-v /var/run/docker.sock:/var/run/docker.sock)
     DOCKER_EXTRA+=(--group-add "$(stat -c '%g' /var/run/docker.sock)")
+    # Ports a sibling container publishes land on the host, not in here, so
+    # give the agent a name that resolves to the host to reach its own stack.
+    DOCKER_EXTRA+=(--add-host "host.docker.internal:host-gateway")
 fi
 
 if [ "$GITLAB" = "1" ]; then
@@ -167,18 +190,19 @@ timeout "$TIMEOUT" docker run --rm -i \
     --network "$NETWORK" \
     "${DOCKER_EXTRA[@]+"${DOCKER_EXTRA[@]}"}" \
     -v "$RUN_DIR/codexhome:/codexhome" \
-    -v "$RUN_DIR/work:/work" \
+    -v "$RUN_DIR/work:$WORK_PATH" \
     -v "$RUN_DIR/agenthome:/agenthome" \
     -e CODEX_HOME=/codexhome \
     -e HOME=/agenthome \
+    -e "OKDEV_WORKSPACE=$WORK_PATH" \
     "$IMAGE" \
     codex exec --json \
         -m "$MODEL" \
         -c model_reasoning_effort="$EFFORT" \
         -s workspace-write \
         --dangerously-bypass-approvals-and-sandbox \
-        -C /work \
-        --output-last-message /work/.okdev-last-message \
+        -C "$WORK_PATH" \
+        --output-last-message "$WORK_PATH/.okdev-last-message" \
         - < "$RUN_DIR/prompt.txt" \
     > "$RUN_DIR/events.jsonl" 2> "$RUN_DIR/stderr.log"
 EXIT_CODE=$?
@@ -217,6 +241,18 @@ for line in open(os.path.join(run_dir, "events.jsonl"), errors="replace"):
     if ev.get("type") == "item.completed" and item.get("type") == "command_execution":
         commands += 1
 
+# Sub-agent activity never appears in the --json stream: a parent waiting on a
+# productive worker emits the same `wait` event as a parent waiting on nothing.
+# Each thread does get its own rollout file, so counting them is the only
+# reliable way to tell delegation from a stall. Anything above 1 is a sub-agent.
+sessions = os.path.join(run_dir, "codexhome", "sessions")
+threads = sum(
+    1
+    for root, _dirs, files in os.walk(sessions)
+    for f in files
+    if f.startswith("rollout-") and f.endswith(".jsonl")
+)
+
 started, ended = int(os.environ["STARTED"]), int(os.environ["ENDED"])
 exit_code = int(os.environ["EXIT_CODE"])
 result = {
@@ -229,6 +265,8 @@ result = {
     "timeout_seconds": int(os.environ["TIMEOUT"]),
     "turns": turns,
     "commands_run": commands,
+    "threads": threads,
+    "subagents": max(0, threads - 1),
     "usage": totals,
     "budget_percent_before": int(os.environ["USED_BEFORE"]),
     "budget_percent_after": int(os.environ["USED_AFTER"]),

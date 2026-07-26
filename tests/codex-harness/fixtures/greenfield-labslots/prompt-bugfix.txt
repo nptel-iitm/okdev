@@ -1,0 +1,22 @@
+$bugfix
+
+Fix issue #1 of okdev/labslots:
+http://gitlab.local:8929/okdev/labslots/-/issues/1
+
+The investigation findings are already posted as a comment on that issue.
+
+Environment:
+- GitLab is at http://gitlab.local:8929. The API token is in the GITLAB_TOKEN
+  environment variable (send it as the PRIVATE-TOKEN header). `git push origin`
+  already has credentials in the remote URL.
+- Docker is available and the daemon socket is mounted. Containers you start
+  are siblings of this one, not children. This workspace is mounted at the same
+  absolute path inside and outside this container, so relative bind mounts in a
+  compose file resolve correctly.
+- Ports a container publishes appear on the Docker host, not on this
+  container's localhost. Reach the stack at http://host.docker.internal:<port>.
+- Playwright and its browsers are installed. PLAYWRIGHT_BROWSERS_PATH is set.
+  Run headless.
+- Sub-agents are available. Delegate as your instructions describe.
+
+Take it through to a merged MR with a regression test, and report what merged.

@@ -78,6 +78,35 @@ Useful flags:
   API, so this is only for testing how a skill behaves when its dependencies
   are unreachable.
 
+## Reading a run that delegates
+
+`codex exec --json` does not report sub-agent activity. A parent that has
+spawned a worker and is waiting for it emits only:
+
+```
+collab_tool_call  tool=wait  receiver_thread_ids=[]  agents_states={}
+```
+
+The underlying call is `wait_agent`, and the rendered event drops both the name
+and the receiver. **A healthy parent waiting on a productive sub-agent looks
+exactly like a parent spinning on nothing.** Do not judge a run by that event.
+
+Count threads instead. Codex writes one rollout per thread, so:
+
+```
+find "$RUN_DIR/codexhome/sessions" -name 'rollout-*.jsonl' | wc -l
+```
+
+is 1 for a solo run and higher when sub-agents exist. `result.json` records
+this as `threads` and `subagents`, and each worker's full transcript is in its
+own rollout file. Misreading this cost one killed run during the campaign in
+RESULTS.md.
+
+Delegation itself needs no configuration - `spawn_agent` is available in
+`codex exec` out of the box - but the model is told not to delegate "unless the
+user or applicable AGENTS.md/skill instructions explicitly ask", so a skill has
+to say "delegate" in as many words to get it.
+
 ## Budget
 
 `run-codex.sh` calls `budget.sh check` before every run and refuses to start
