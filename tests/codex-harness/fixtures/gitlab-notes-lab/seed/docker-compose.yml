@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/srv
+      - notes-data:/data
+    environment:
+      PORT: 8080
+      NOTES_DB: /data/notes.db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8080/')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  notes-data:

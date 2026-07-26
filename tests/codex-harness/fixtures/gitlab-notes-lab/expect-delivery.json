@@ -1,0 +1,11 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1500,
+  "files_exist": [".okdev/delivery-report.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/delivery-report.md", "pattern": "(?i)(delivered|not ready|known issue)"},
+    {"path": ".okdev/delivery-report.md", "pattern": "(?i)(docker compose|python3 -m app.server)"},
+    {"path": ".okdev/delivery-report.md", "pattern": "[0-9]+ *(tests?|passed)"}
+  ]
+}

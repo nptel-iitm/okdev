@@ -1,0 +1,8 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 2400,
+  "run_state": {"status": "complete"},
+  "commands": [
+    {"cmd": "docker run --rm -v \"$PWD\":/srv -w /srv --user $(id -u):$(id -u) okdev-codex-test:0.145.0 python3 -m pytest -q", "expect_exit": 0, "timeout": 300}
+  ]
+}

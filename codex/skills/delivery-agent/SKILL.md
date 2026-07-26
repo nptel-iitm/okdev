@@ -60,14 +60,21 @@ what to do next.
 
 ## Done when
 
-Every requirement is traced to its implementation and its test, the deployment
-path has been executed from clean and works, open issues are listed with
-severity, and the report quotes measured numbers. Then run
-`.okdev/bin/okdev-state complete --workflow delivery-agent`.
+The report exists, every requirement is traced to its implementation and its
+test, the deployment path has been executed and the result stated, open issues
+are listed with severity, and the numbers are measured rather than described.
+Then run `.okdev/bin/okdev-state complete --workflow delivery-agent`.
+
+Your job is to describe the state of the product accurately, not to certify it
+as good. A product with failing requirements is delivered as **not ready**, with
+those failures named — that is a finished delivery report, and the run is
+complete. Failing tests, open bugs and unmet requirements all belong in the
+report rather than in a blocker.
 
 ## Stop when
 
 Record a blocker with `.okdev/bin/okdev-state block "<reason>"` and end the turn
-if the stack does not come up from a clean checkout, or if requirements have no
-implementation behind them. Those are delivery-blocking findings, and the report
-should say so rather than papering over them.
+only when you cannot produce an honest report at all: the deployment path cannot
+be executed so you would have to guess whether it works, or the test results and
+requirements you are meant to summarise do not exist. Blocking because the news
+is bad would withhold the very report someone needs in order to act on it.

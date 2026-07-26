@@ -182,13 +182,56 @@ The behaviours most likely to be flaky were run more than once. Approving clean
 code, stopping a review loop at its budget, and the unit-test pass all repeated
 with identical outcomes (8/8, 10/10, 11/11 on the second and third runs).
 
+## Against a real GitLab project
+
+`setup-gitlab-lab.sh` creates `okdev/notes-lab`: a small notes service with a
+JSON API, a static frontend and a SQLite store, seeded with three defects in
+three different layers and a filed issue for each.
+
+- **#1** the API accepts a note with a blank title, though the README says it
+  must be rejected;
+- **#2** `list_notes` takes an `owner` argument and never uses it, so any
+  signed-in account can read every other account's notes;
+- **#3** a fixed 900px container makes the page unusable at phone widths.
+
+```
+run  skill                       what happened                          score
+g01  replicate-issue             reproduced #2 in two independent       8/8
+                                 browser sessions, uploaded 2
+                                 screenshots, posted the report, named
+                                 app/store.py:33-38, changed no code
+g02  tech-lead-agent             branch -> MR !1 -> review -> merged;    8/8
+                                 issue #1 auto-closed; 47-line
+                                 regression test added
+g03  replicate-multiple-issues   investigated #2 and #3 in turn, posted  7/7
+                                 evidence to both
+g04  load-tester                 ran k6 from the grafana/k6 image as a   8/8
+                                 sibling container, 105,495 requests,
+                                 measured p95 52ms / p99 68ms / 0
+                                 errors / 1,055 rps
+g05  replicate-and-kickoff       reproduced #2, fixed it, MR !2 merged,  6/6
+                                 issue #2 closed, 5 tests green
+```
+
+Both merges were verified independently of the agent's own report, by cloning
+`main` afterwards and re-running the original reproduction:
+
+```
+issue #1   POST /api/notes {"title":""}   before: 201    after: 400
+issue #2   sam reads demo's notes         before: leaks  after: []
+```
+
+`docker.sock` is mounted for the load test via `run-codex.sh --docker`, so the
+skill runs k6 in a container the way its instructions require rather than being
+quietly excused from it. The k6 container is a sibling, not a child, which the
+prompt says explicitly — the skill worked out the `--network host` and script
+mounting itself.
+
 ### Still not covered
 
-`load-tester` (needs k6 in Docker from inside the container), `replicate-issue`
-and the `replicate-*` / `kickoff-multi` coordinators (need a live GitLab project
-with real issues), and `test-planner-agent`, `dev-agent`, `delivery-agent` and
-`ui-designer-agent` end to end. All were exercised only through their blocking
-paths or as part of another skill's run.
+`delivery-agent`, `ui-designer-agent` and `kickoff-multi` end to end.
+`dev-agent` and `code-review-agent` ran inside g02 and g05 rather than
+standalone against GitLab.
 
 ## Cost
 
