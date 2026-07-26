@@ -1,14 +1,37 @@
 {
   "must_not_time_out": true,
   "max_duration_seconds": 1200,
-  "files_exist": [".okdev/architecture.md", ".okdev/run-state.json"],
-  "run_state": {"status": "complete"},
+  "files_exist": [
+    ".okdev/architecture.md",
+    ".okdev/run-state.json"
+  ],
+  "run_state": {
+    "status": "complete"
+  },
   "files_match": [
-    {"path": ".okdev/architecture.md", "pattern": "(?i)docker[- ]compose"},
-    {"path": ".okdev/architecture.md", "pattern": "(?i)(django|python)"},
-    {"path": ".okdev/architecture.md", "pattern": "(?i)postgres"},
-    {"path": ".okdev/architecture.md", "pattern": "(?i)(swap|roster)"},
-    {"path": ".okdev/architecture.md", "pattern": "(?i)(risk|trade-?off)"},
-    {"path": ".okdev/architecture.md", "pattern": "(?i)implementation order"}
+    {
+      "path": ".okdev/architecture.md",
+      "pattern": "(?i)docker[- ]compose"
+    },
+    {
+      "path": ".okdev/architecture.md",
+      "pattern": "(?i)(django|python)"
+    },
+    {
+      "path": ".okdev/architecture.md",
+      "pattern": "(?i)postgres"
+    },
+    {
+      "path": ".okdev/architecture.md",
+      "pattern": "(?i)(swap|roster)"
+    },
+    {
+      "path": ".okdev/architecture.md",
+      "pattern": "(?i)(risk|trade-?off)"
+    },
+    {
+      "path": ".okdev/architecture.md",
+      "pattern": "(?i)(implementation (order|plan|sequence)|build order|dependency-ordered)"
+    }
   ]
 }

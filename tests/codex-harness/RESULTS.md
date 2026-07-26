@@ -90,10 +90,72 @@ All four Codex runs scored 11/11 on the fixture's machine-checkable
 expectations, including writing the report to the expected path and leaving
 run state in `complete`.
 
+## Skill coverage
+
+Each row is a Codex run scored against the fixture's machine-checkable
+expectations.
+
+```
+skill                  fixture                  what it had to do          score
+unit-test-runner       unit-tests-basic         find a planted boundary    11/11
+                                                bug, report it, leave the
+                                                failing test in place
+code-review-agent      review-good-code         approve correct code       8/8
+                                                without inventing a
+                                                blocking finding
+code-review-agent      review-buggy-code        catch SQL injection as     10/10
+                                                MUST FIX, request changes
+tech-lead-agent        review-never-converges   stop at 3 rounds, refuse   10/10
+                                                to merge, record a blocker
+tech-lead-agent        (resumed session)        resume the round count     see above
+                                                from disk after context
+                                                is lost
+requirements-agent     requirements-vague       turn a 12-line brief into  11/11
+                                                requirements plus stated
+                                                ambiguities
+architect-agent        architect-from-reqs      design the system, stack,  13/13
+                                                Compose topology, risks,
+                                                build order
+e2e-test-runner        blocked-no-app           block in 33s when the app  8/8
+                                                is unreachable
+kickoff                kickoff-blocked-env      block when the environment 9/9
+                                                preconditions fail
+bugfix                 (resumed mid-run)        skip finished phases, fix  see above
+                                                the bug, add a regression
+                                                test, complete
+```
+
+One assertion was wrong rather than one skill: the architecture fixture
+originally required the literal heading "implementation order", and the run
+produced "Dependency-ordered implementation plan". The skill asks for a
+dependency-ordered build sequence, which is what it delivered, so the assertion
+was corrected and the stored run rescored.
+
+The `bugfix` resumption run has a control worth quoting. Same staged situation,
+old skills, no state on disk:
+
+```
+                 input tokens   phases re-run        prior artifact
+codex/skills        344k        none                 preserved
+claude/skills      1085k        0, 1 and 2           requirements.md overwritten
+```
+
+Both produced a correct fix. The difference is 3.2x the tokens and the loss of
+the previous phase's output.
+
+### Not covered
+
+The skills that need a live browser, a running application or GitLab were
+exercised only on their blocking path: `integration-test-runner`,
+`load-tester`, `ui-screenshot-scorer`, `manual-spot-checker`, `replicate-issue`,
+and the `replicate-*` and `kickoff-multi` coordinators. Their happy paths need a
+real project with its stack up.
+
 ## Cost
 
-Twelve Codex runs, roughly 3.5M input tokens, moved the weekly ChatGPT window
-by under one percentage point (2% at the start of the work, 3% after). The
+Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT
+window by two percentage points (2% at the start of the work, 4% after) - well
+inside the 10% budget for the whole task. The
 budget guard in `budget.sh` refuses to start a run once the window passes
 `OKDEV_BUDGET_CEILING`.
 
