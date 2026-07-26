@@ -276,6 +276,58 @@ amount of re-reading the skill had surfaced.
 `dev-agent` and `code-review-agent` have run only inside an orchestrator's
 workflow (`g02`, `g05`, `g10`), never standalone against a GitLab MR.
 
+## Correction: these runs suppressed delegation, on a false premise
+
+Every prompt in the section above contains a line like *"Sub-agents are not
+available here, so do the work yourself."* **That premise was wrong.**
+`spawn_agent` is available in `codex exec` with no configuration at all; a
+later probe spawned a working sub-agent both with and without the
+`[orchestrator]` config block.
+
+Two further claims made earlier in this file's history were also wrong:
+
+| Claimed | Actually |
+|---|---|
+| Sub-agent depth is capped at 1 | The primary agent is told "those sub-agents can spawn their own sub-agents" |
+| Delegation needs enabling | It is on by default; what is gated is *when* the model may use it |
+
+The real constraint is a server-delivered instruction:
+
+> `<multi_agent_mode>` Any earlier instruction enabling proactive multi-agent
+> delegation no longer applies. Do not spawn sub-agents unless the user or
+> applicable AGENTS.md/skill instructions **explicitly ask** for sub-agents,
+> delegation, or parallel agent work.
+
+That is good news for a hub-and-spoke design - a skill that says "Delegate to
+`requirements-agent`" is precisely the explicit authorisation being asked for -
+but it means delegation has to be stated in the skill text. A skill that only
+implies it silently gets one agent doing everything.
+
+What this costs the results above: they remain valid evidence for the
+issue-to-merge lifecycle and for the bounded review loop, which is what they
+were built to measure. They are **not** evidence about delegation, and they
+turned off the mechanism the architecture is built on. The end-to-end campaign
+below was run with delegation left on.
+
+### Why the mistake survived so long
+
+`codex exec --json` never surfaces sub-agent activity. A parent waiting on a
+productive worker emits exactly this, and nothing else:
+
+```
+collab_tool_call  tool=wait  receiver_thread_ids=[]  agents_states={}
+```
+
+The underlying call is `wait_agent`; the rendered event drops the name and the
+receiver. So a healthy parent supervising a sub-agent is indistinguishable, in
+the event stream, from a parent spinning on nothing - and it reads like the
+latter. That misreading killed a healthy `kickoff` ten minutes into `e2e-01`.
+
+The reliable signal is the thread count: Codex writes one
+`sessions/**/rollout-*.jsonl` per thread, so more than one means real
+sub-agents. `run-codex.sh` now records it in `result.json` as `threads` and
+`subagents`.
+
 ## Cost
 
 Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT
