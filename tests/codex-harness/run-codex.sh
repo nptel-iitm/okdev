@@ -15,6 +15,16 @@
 #   --model <slug>     default gpt-5.6-terra
 #   --effort <level>   low|medium|high|xhigh|max   (default medium)
 #   --timeout <sec>    wall-clock cap for the container (default 900)
+#   --runtime <name>   codex (okdev-state + AGENTS.md, default), claude
+#                      (CLAUDE.md only - use for control runs), or none
+#   --compact-at <n>   force auto-compaction once the context passes n tokens.
+#                      The loop failures reported in issue #15 only appear once
+#                      a run has been compacted, so a test for them has to make
+#                      compaction happen rather than wait for a huge run.
+#   --reuse-work <dir> start from an existing workspace instead of a fixture. A
+#                      fresh session over a used workspace is compaction taken
+#                      to its limit: no conversational memory at all, so only
+#                      state written to disk can survive.
 #   --no-network       cut the container off from the network (default: on;
 #                      Codex needs it to reach the API at all)
 #
@@ -31,7 +41,7 @@ IMAGE="${OKDEV_CODEX_IMAGE:-okdev-codex-test:0.145.0}"
 
 RUN_ID=""; PROMPT_FILE=""; FIXTURE=""
 SKILLS="$REPO_DIR/codex/skills"
-MODEL="gpt-5.6-terra"; EFFORT="medium"; TIMEOUT=900; NETWORK="bridge"
+MODEL="gpt-5.6-terra"; EFFORT="medium"; TIMEOUT=900; NETWORK="bridge"; RUNTIME="codex"; COMPACT_AT=""; REUSE_WORK=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -42,6 +52,9 @@ while [ $# -gt 0 ]; do
         --model)       MODEL="$2"; shift 2 ;;
         --effort)      EFFORT="$2"; shift 2 ;;
         --timeout)     TIMEOUT="$2"; shift 2 ;;
+        --runtime)     RUNTIME="$2"; shift 2 ;;
+        --compact-at)  COMPACT_AT="$2"; shift 2 ;;
+        --reuse-work)  REUSE_WORK="$2"; shift 2 ;;
         --no-network)  NETWORK="none"; shift ;;
         *) echo "run-codex: unknown option $1" >&2; exit 2 ;;
     esac
@@ -73,23 +86,41 @@ model_reasoning_effort = "$EFFORT"
 trust_level = "trusted"
 EOF
 
+if [ -n "$COMPACT_AT" ]; then
+    echo "model_auto_compact_token_limit = $COMPACT_AT" >> "$RUN_DIR/codexhome/config.toml"
+fi
+
 if [ -d "$SKILLS" ]; then
     cp -r "$SKILLS"/* "$RUN_DIR/codexhome/skills/" 2>/dev/null || true
 fi
 
-if [ -n "$FIXTURE" ]; then
+if [ -n "$REUSE_WORK" ]; then
+    [ -d "$REUSE_WORK" ] || { echo "run-codex: workspace not found: $REUSE_WORK" >&2; exit 2; }
+    cp -r "$REUSE_WORK"/. "$RUN_DIR/work/"
+elif [ -n "$FIXTURE" ]; then
     [ -d "$FIXTURE" ] || { echo "run-codex: fixture not found: $FIXTURE" >&2; exit 2; }
     cp -r "$FIXTURE"/. "$RUN_DIR/work/"
 fi
 
-# Install the OKDev runtime the skills expect: the durable state helper they
-# call, and the shared operating rules Codex loads from AGENTS.md.
-mkdir -p "$RUN_DIR/work/.okdev/bin"
-cp "$REPO_DIR/codex/lib/okdev-state" "$RUN_DIR/work/.okdev/bin/okdev-state"
-chmod +x "$RUN_DIR/work/.okdev/bin/okdev-state"
-if [ ! -f "$RUN_DIR/work/AGENTS.md" ]; then
-    cp "$REPO_DIR/codex/AGENTS.md" "$RUN_DIR/work/AGENTS.md"
-fi
+# Install the runtime the chosen harness expects. Getting this wrong silently
+# ruins a control run: dropping codex/AGENTS.md into a workspace hands the old
+# Claude skills the new operating rules, and they then appear to behave
+# correctly for reasons that have nothing to do with the skill under test.
+case "$RUNTIME" in
+    codex)
+        mkdir -p "$RUN_DIR/work/.okdev/bin"
+        cp "$REPO_DIR/codex/lib/okdev-state" "$RUN_DIR/work/.okdev/bin/okdev-state"
+        chmod +x "$RUN_DIR/work/.okdev/bin/okdev-state"
+        [ -f "$RUN_DIR/work/AGENTS.md" ] || cp "$REPO_DIR/codex/AGENTS.md" "$RUN_DIR/work/AGENTS.md"
+        ;;
+    claude)
+        # What the previous installer produced for a Codex user: the Claude
+        # skill tree plus CLAUDE.md, and no durable state helper.
+        [ -f "$RUN_DIR/work/CLAUDE.md" ] || cp "$REPO_DIR/CLAUDE.md" "$RUN_DIR/work/CLAUDE.md"
+        ;;
+    none) ;;
+    *) echo "run-codex: unknown runtime '$RUNTIME'" >&2; exit 2 ;;
+esac
 
 # Every fixture is a git repo so the agent can branch and commit, and so the
 # scorer can diff what actually changed.
@@ -106,7 +137,7 @@ cp "$PROMPT_FILE" "$RUN_DIR/prompt.txt"
 USED_BEFORE=$(bash "$REPO_DIR/tests/codex-harness/budget.sh" used)
 STARTED=$(date +%s)
 set +e
-timeout "$TIMEOUT" docker run --rm \
+timeout "$TIMEOUT" docker run --rm -i \
     --user "$(id -u):$(id -g)" \
     --network "$NETWORK" \
     -v "$RUN_DIR/codexhome:/codexhome" \

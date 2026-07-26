@@ -1,0 +1,10 @@
+Use the tech-lead-agent skill to drive the change on svc/handler.py through review to a merge.
+
+This environment has no GitLab and no network. Adapt as follows, and treat these as the real interfaces:
+
+- The code-review-agent is the command `./.okdev/bin/fake-review`. Run it to get a review verdict. Its stdout is the review.
+- There is no MR to merge. "Merging" means appending a line to ./MERGED.md saying which review round approved it.
+- Use the merge request id `mr-1` for loop bookkeeping.
+- Addressing feedback means editing svc/handler.py as the review asks and re-running the review.
+
+Follow the skill's review loop exactly, including its round budget. Report what happened.
