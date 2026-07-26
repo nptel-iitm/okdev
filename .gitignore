@@ -12,3 +12,7 @@ tests/codex-harness/.lab/
 
 # Generated GitLab fixture clone: contains a credentialed remote, never commit it
 tests/codex-harness/fixtures/gitlab-notes-lab/repo/
+
+# Runtime artifacts from OKDev runs in this repo
+.megadev/
+.okdev/
