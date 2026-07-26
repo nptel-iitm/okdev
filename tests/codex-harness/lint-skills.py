@@ -48,6 +48,25 @@ DELEGATED_READ = re.compile(
 )
 
 
+# Skills whose job is to coordinate other skills rather than do the work.
+ORCHESTRATORS = {
+    "kickoff",
+    "kickoff-multi",
+    "bugfix",
+    "tech-lead-agent",
+    "test-planner-agent",
+    "replicate-and-kickoff",
+    "replicate-and-kickoff-multi",
+    "replicate-multiple-issues",
+    "manual-suite-driver",
+}
+
+# Wording that counts as explicitly asking for delegation.
+EXPLICIT_DELEGATION = re.compile(
+    r"(delegate|sub-?agent|spawn|hand off to|dispatch)", re.IGNORECASE
+)
+
+
 def parse_frontmatter(text: str) -> tuple[dict, str]:
     if not text.startswith("---"):
         return {}, text
@@ -113,6 +132,17 @@ def check(path: Path) -> tuple[list[str], list[str]]:
 
     if "## Done when" not in body:
         errors.append("has no '## Done when' completion bar")
+
+    # GPT-5.6 is told: "Do not spawn sub-agents unless the user or applicable
+    # AGENTS.md/skill instructions explicitly ask for sub-agents, delegation,
+    # or parallel agent work." An orchestrator that only implies delegation
+    # gets none - it quietly does every phase itself, in one context, which is
+    # the shape that overruns its budgets.
+    if path.parent.name in ORCHESTRATORS and not EXPLICIT_DELEGATION.search(body):
+        errors.append(
+            "is an orchestrator but never explicitly asks for delegation; "
+            "GPT-5.6 will not spawn sub-agents unless a skill says so outright"
+        )
 
     return errors, warnings
 

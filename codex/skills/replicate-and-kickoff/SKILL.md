@@ -32,10 +32,11 @@ A GitLab issue URL, and the running application.
 
 ## Phase: replicate
 
-Run the `replicate-issue` investigation: reproduce the reported behaviour in a
-real browser, capture screenshots and the relevant API responses, mark each
-acceptance criterion working or broken, identify the likely cause down to a file
-and function, and post the report and evidence to the issue.
+Delegate the investigation to a sub-agent running `replicate-issue`: reproduce
+the reported behaviour in a real browser, capture screenshots and the relevant
+API responses, mark each acceptance criterion working or broken, identify the
+likely cause down to a file and function, and post the report and evidence to
+the issue.
 
 Record the outcome:
 
@@ -51,10 +52,10 @@ not observe.
 
 ## Phase: fix
 
-Run the `bugfix` lifecycle against the issue, starting from the specification
-your own investigation just produced. That means: a dev-agent branches,
-implements the fix and writes a regression test that fails on the old code, then
-the bounded review loop:
+Delegate the fix to a sub-agent running the `bugfix` lifecycle against the
+issue, starting from the specification the investigation just produced. That
+means: a `dev-agent` branches, implements the fix and writes a regression test
+that fails on the old code, then the bounded review loop, which you own:
 
 ```
 .okdev/bin/okdev-state loop-bump review:mr-{iid} --limit 3
