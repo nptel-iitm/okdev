@@ -9,3 +9,6 @@ plan.md
 
 # Codex harness scratch (lives on the data volume, never in the repo)
 tests/codex-harness/.lab/
+
+# Generated GitLab fixture clone: contains a credentialed remote, never commit it
+tests/codex-harness/fixtures/gitlab-notes-lab/repo/
