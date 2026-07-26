@@ -1,0 +1,10 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1500,
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete"},
+  "commands": [
+    {"cmd": "git diff --quiet HEAD -- app/ public/ && echo 'no product code changed'", "expect_exit": 0},
+    {"cmd": "ls test-results/*.png >/dev/null 2>&1 || ls .okdev/test-results/screenshots/*/*.png >/dev/null 2>&1", "expect_exit": 0}
+  ]
+}

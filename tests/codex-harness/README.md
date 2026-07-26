@@ -110,6 +110,12 @@ workspace, not a round number in a tool's output, not a sentence in the prompt.
 All three leaked in the first version of the resumption test, and each one made
 the control look correct.
 
+**Commands run under `pipefail`.** A `cmd | tail -1` assertion would otherwise
+report `tail`'s exit status and pass no matter what `cmd` did — one of these
+slipped through and scored a run green while `pytest` was not even installed.
+The flip side is that `git log | grep -q` now dies of SIGPIPE, so write
+assertions without pipes where you can.
+
 **Prefer a fixture that can fail.** A test where the desired behaviour is also
 the path of least resistance proves very little. The review-loop fixtures use a
 reviewer that can never be satisfied precisely so that stopping requires the

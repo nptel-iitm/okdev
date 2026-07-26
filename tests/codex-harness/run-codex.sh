@@ -27,6 +27,11 @@
 #                      fresh session over a used workspace is compaction taken
 #                      to its limit: no conversational memory at all, so only
 #                      state written to disk can survive.
+#   --gitlab           make the host's GitLab reachable from inside the
+#                      container as gitlab.local:8929, and pass the API token
+#                      in as GITLAB_TOKEN
+#   --docker           mount the host Docker socket, so a skill can run its
+#                      tooling in a container as its instructions require
 #   --no-network       cut the container off from the network (default: on;
 #                      Codex needs it to reach the API at all)
 #
@@ -43,7 +48,7 @@ IMAGE="${OKDEV_CODEX_IMAGE:-okdev-codex-test:0.145.0}"
 
 RUN_ID=""; PROMPT_FILE=""; FIXTURE=""
 SKILLS="$REPO_DIR/codex/skills"
-MODEL="gpt-5.6-terra"; EFFORT="medium"; TIMEOUT=900; NETWORK="bridge"; RUNTIME="codex"; COMPACT_AT=""; REUSE_WORK=""
+MODEL="gpt-5.6-terra"; EFFORT="medium"; TIMEOUT=900; NETWORK="bridge"; RUNTIME="codex"; COMPACT_AT=""; REUSE_WORK=""; GITLAB=0; DOCKER_SOCK=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -58,6 +63,8 @@ while [ $# -gt 0 ]; do
         --runtime)     RUNTIME="$2"; shift 2 ;;
         --compact-at)  COMPACT_AT="$2"; shift 2 ;;
         --reuse-work)  REUSE_WORK="$2"; shift 2 ;;
+        --gitlab)      GITLAB=1; shift ;;
+        --docker)      DOCKER_SOCK=1; shift ;;
         --no-network)  NETWORK="none"; shift ;;
         *) echo "run-codex: unknown option $1" >&2; exit 2 ;;
     esac
@@ -140,9 +147,25 @@ cp "$PROMPT_FILE" "$RUN_DIR/prompt.txt"
 USED_BEFORE=$(bash "$REPO_DIR/tests/codex-harness/budget.sh" used)
 STARTED=$(date +%s)
 set +e
+# GitLab runs on the host, so the container reaches it through the gateway
+# rather than by joining the host network - that keeps any port the agent
+# binds inside the container.
+DOCKER_EXTRA=()
+if [ "$DOCKER_SOCK" = "1" ]; then
+    DOCKER_EXTRA+=(-v /var/run/docker.sock:/var/run/docker.sock)
+    DOCKER_EXTRA+=(--group-add "$(stat -c '%g' /var/run/docker.sock)")
+fi
+
+if [ "$GITLAB" = "1" ]; then
+    DOCKER_EXTRA+=(--add-host "gitlab.local:host-gateway")
+    DOCKER_EXTRA+=(-e "GITLAB_TOKEN=$(cat "$REPO_DIR/infrastructure/gitlab/.gitlab-token")")
+    DOCKER_EXTRA+=(-e "GITLAB_URL=http://gitlab.local:8929")
+fi
+
 timeout "$TIMEOUT" docker run --rm -i \
     --user "$(id -u):$(id -g)" \
     --network "$NETWORK" \
+    "${DOCKER_EXTRA[@]+"${DOCKER_EXTRA[@]}"}" \
     -v "$RUN_DIR/codexhome:/codexhome" \
     -v "$RUN_DIR/work:/work" \
     -v "$RUN_DIR/agenthome:/agenthome" \

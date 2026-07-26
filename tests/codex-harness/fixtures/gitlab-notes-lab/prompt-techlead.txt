@@ -1,0 +1,14 @@
+Use the tech-lead-agent skill to drive issue #1 of okdev/notes-lab to a merged merge request.
+
+Issue: http://gitlab.local:8929/okdev/notes-lab/-/issues/1
+
+Environment:
+- GitLab is at http://gitlab.local:8929 and the API token is in the GITLAB_TOKEN environment variable (send it as the PRIVATE-TOKEN header). The project is okdev/notes-lab, and `git push` already has credentials in the origin remote.
+- The GitLab project already exists with its board and labels, so skip project setup and issue breakdown. Your job is the implementation and review loop for this one existing issue.
+- Docker is not available. Run the app directly with:
+      PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Tests run with `python3 -m pytest`.
+
+Do the work yourself rather than delegating, since sub-agents are not available in this environment: implement the fix on a feature branch, push it, open the MR, then run the review loop by reviewing the MR head against the issue's acceptance criteria and acting on your own verdict. Respect the loop's round budget.
+
+Report the branch, the MR number, the verdict, and whether it merged.

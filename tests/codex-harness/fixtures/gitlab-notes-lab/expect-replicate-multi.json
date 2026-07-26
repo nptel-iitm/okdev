@@ -1,0 +1,9 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1800,
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete"},
+  "commands": [
+    {"cmd": "git diff --quiet HEAD -- app/ public/", "expect_exit": 0}
+  ]
+}

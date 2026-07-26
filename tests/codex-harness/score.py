@@ -85,8 +85,11 @@ class Scorer:
             self.record(f"{spec['path']} matches /{spec['pattern']}/", found)
 
         for spec in self.expect.get("commands", []):
+            # pipefail matters: `cmd | tail -1` otherwise reports tail's exit
+            # status, so a failing command inside a pipeline scores as a pass.
+            # A vacuous assertion is worse than a missing one.
             proc = subprocess.run(
-                spec["cmd"], shell=True, cwd=self.work,
+                ["bash", "-o", "pipefail", "-c", spec["cmd"]], cwd=self.work,
                 capture_output=True, text=True, timeout=spec.get("timeout", 300),
             )
             want = spec.get("expect_exit", 0)

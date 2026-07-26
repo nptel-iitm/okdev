@@ -1,0 +1,10 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1800,
+  "files_exist": [".okdev/test-plan.md", ".okdev/test-report.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/test-plan.md", "pattern": "(?i)(coverage matrix|\\| *requirement)"},
+    {"path": ".okdev/test-report.md", "pattern": "(?i)(ready|needs work|not ready)"}
+  ]
+}
