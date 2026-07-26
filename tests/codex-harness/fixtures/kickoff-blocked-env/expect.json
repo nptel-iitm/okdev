@@ -1,0 +1,9 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 600,
+  "files_exist": [".okdev/run-state.json", ".okdev/blocked.md"],
+  "run_state": {"status": "blocked", "workflow": "kickoff"},
+  "files_match": [
+    {"path": ".okdev/blocked.md", "pattern": "(?i)(docker|gitlab|environment)"}
+  ]
+}

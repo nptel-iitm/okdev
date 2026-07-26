@@ -20,7 +20,7 @@ This system uses a hub-and-spoke model:
 - Agents communicate through GitLab (issues, MRs, comments) and local files
 
 ## Agent Skills Location
-The source of truth for agent skills in this repo is `.claude/skills/<skill-name>/SKILL.md`:
+The Claude Code skill tree is `claude/skills/<skill-name>/SKILL.md` (also reachable as `.claude/skills/`, a symlink):
 - **Orchestration**: `kickoff`, `bugfix` (kickoff variant for fixing a bug on an existing project — skips architecture/tech-stack/project-setup phases), `requirements-agent`, `architect-agent`
 - **Development**: `tech-lead-agent`, `dev-agent`, `code-review-agent`
 - **Testing**: `test-planner-agent`, `unit-test-runner`, `integration-test-runner`, `e2e-test-runner`, `ui-screenshot-scorer`, `load-tester`, `manual-spot-checker`
@@ -29,7 +29,11 @@ The source of truth for agent skills in this repo is `.claude/skills/<skill-name
 - **Design**: `ui-designer-agent`
 - **Delivery**: `delivery-agent`
 
-For Codex, install the same skill folders into `${CODEX_HOME:-~/.codex}/skills/`.
+Codex has its own tree at `codex/skills/`, written against a different execution
+contract rather than translated from these. Install it with
+`./scripts/install-to-project.sh <target> --harness codex`, which also installs
+`AGENTS.md` and the `okdev-state` run-state helper the Codex skills depend on.
+Do not install this Claude tree for a Codex user.
 
 ## Coding Standards
 - Write tests for all new code

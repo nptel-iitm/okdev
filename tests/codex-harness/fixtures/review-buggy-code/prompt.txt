@@ -1,0 +1,9 @@
+Use the code-review-agent skill to review the change that added svc/search.py and tests/test_search.py.
+
+This environment has no GitLab. Adapt as follows:
+
+- The "MR" is the addition of svc/search.py and tests/test_search.py.
+- Instead of commenting on an MR, write your verdict comment to ./review-verdict.md in the format the skill specifies.
+- The linked issue's acceptance criteria are: users can search products by name, results are capped, and the endpoint is safe against hostile input.
+
+Report your verdict.

@@ -13,7 +13,17 @@ Agents coordinate through two durable channels:
 - GitLab issues, boards, branches, merge requests, and comments track project work.
 - `.okdev/` documents and test artifacts pass structured outputs between phases.
 
-The detailed operating policy and agent catalog live in [CLAUDE.md](CLAUDE.md). The skill source of truth is `.claude/skills/`; the installer makes the same skills available to both Claude Code and Codex.
+The detailed operating policy and agent catalog live in [CLAUDE.md](CLAUDE.md).
+
+There are two skill trees, one per harness, and they are not translations of
+each other. `claude/skills/` targets Claude Code. `codex/skills/` targets Codex
+and the GPT-5.6 models: Codex drops a skill between turns and compacts long
+runs, so those skills keep their phase and loop counters in
+`.okdev/run-state.json` and end in states an agent can reach without a human.
+Running the Claude tree under Codex is what produced the never-ending workflows
+in issue #15; see [tests/codex-harness/RESULTS.md](tests/codex-harness/RESULTS.md)
+for the controlled experiment. `.claude/skills` is a symlink to `claude/skills`
+so this repo still dogfoods itself in Claude Code.
 
 ## Capabilities
 
@@ -95,8 +105,13 @@ Restart an already-running Codex session after installation so it discovers the 
 
 `scripts/install-to-project.sh`:
 
-- Copies all skills to `<target>/.claude/skills/` for Claude Code.
-- Copies the same skills to `${CODEX_HOME:-~/.codex}/skills/` for Codex.
+- Asks which harness you are installing for, or takes `--harness claude|codex|both`.
+- For Claude Code: copies `claude/skills/` to `<target>/.claude/skills/`, plus
+  `CLAUDE.md` and `.claude/settings.json`.
+- For Codex: copies `codex/skills/` to `${CODEX_HOME:-~/.codex}/skills/`, writes
+  `AGENTS.md` into the target, and installs the run-state helper at
+  `<target>/.okdev/bin/okdev-state`. That helper is what makes a long Codex run
+  survive a compaction, so a Codex install without it will loop.
 - Backs up conflicting Codex skills under `${CODEX_HOME:-~/.codex}/okdev-backups/<timestamp>/` before replacing them.
 - Copies `.claude/settings.json` into the target.
 - Copies or appends the repository's `CLAUDE.md` policy.
@@ -157,7 +172,11 @@ See [infrastructure/mcp-servers/README.md](infrastructure/mcp-servers/README.md)
 
 ```text
 .
-├── .claude/skills/                 Agent skill definitions
+├── claude/skills/                  Skill tree for Claude Code
+├── codex/skills/                   Skill tree for Codex / GPT-5.6
+├── codex/lib/okdev-state           Durable run state for Codex workflows
+├── codex/AGENTS.md                 Shared operating rules for Codex
+├── .claude/skills -> claude/skills Symlink, so this repo dogfoods itself
 ├── hooks/                          Environment and pre-commit checks
 ├── infrastructure/gitlab/          Local GitLab Compose and bootstrap
 ├── infrastructure/mcp-servers/     MCP and optional Stitch configuration
@@ -178,6 +197,10 @@ find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -n1 bash -n
 # Exercise the target installer with isolated HOME and CODEX_HOME directories.
 bash tests/install-to-project-smoke.sh
 
+# Structural checks on the Codex skill tree. Both are free - no model calls.
+python3 tests/codex-harness/lint-skills.py codex/skills
+bash tests/codex-harness/check-catalog.sh codex/skills
+
 # Validate the Compose model without starting GitLab.
 GITLAB_ROOT_PASSWORD='temporary-validation-value' \
   docker compose -f infrastructure/gitlab/docker-compose.yml config
@@ -195,6 +218,7 @@ Changes to agent contracts should also be checked for consistent `.okdev/` produ
 - No GitLab MCP token: rerun `infrastructure/gitlab/setup-gitlab.sh`, then `infrastructure/mcp-servers/setup-mcp.sh`.
 - No `.mcp.json` in a target: finish GitLab/MCP setup and rerun the target installer.
 - Codex cannot find a skill: restart Codex after installation and confirm `${CODEX_HOME:-~/.codex}/skills/` contains the skill.
+- A Codex run repeats a phase it already finished: check that `<target>/.okdev/bin/okdev-state` exists and `okdev-state next` reports the run. Without it there is nothing for the workflow to resume from.
 - Existing GitLab password did not change: initial-password configuration does not modify an existing data volume; use GitLab's password-reset procedure.
 
 ## Security-sensitive local files

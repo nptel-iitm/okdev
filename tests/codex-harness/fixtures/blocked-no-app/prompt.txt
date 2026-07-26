@@ -1,0 +1,5 @@
+Use the e2e-test-runner skill against this project.
+
+The application should be running at http://localhost:39999. There is no network access and no Docker available inside this environment, so nothing can be started.
+
+Test the critical user flows and report.
