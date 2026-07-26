@@ -211,6 +211,32 @@ g04  load-tester                 ran k6 from the grafana/k6 image as a   8/8
                                  errors / 1,055 rps
 g05  replicate-and-kickoff       reproduced #2, fixed it, MR !2 merged,  6/6
                                  issue #2 closed, 5 tests green
+g06  test-planner-agent          planned 7 categories with a coverage    9/9
+                                 matrix, ran them, wrote a report with
+                                 a readiness verdict
+g08  ui-designer-agent           specified the fix for #3 across three   10/10
+                                 viewports with tokens and contrast
+                                 targets, and changed no code
+g09  delivery-agent              traced requirements, verified the       9/9
+                                 deployment path, reported "NOT READY
+                                 TO DELIVER" as a complete run
+g10  kickoff-multi               drove issues #4 and #5 through the      6/6
+                                 lifecycle in sequence: two more MRs
+                                 merged, both issues closed
+```
+
+Final state of the project, read back from GitLab rather than from any agent's
+report: four merge requests merged, four of five issues closed, 14 tests green.
+Issue #3 is still open because it was only ever investigated, never assigned
+for a fix — which is correct.
+
+Every merged change was verified independently by cloning `main` and exercising
+the behaviour:
+
+```
+blank title            400        health endpoint (no auth)   200 {"status":"ok"}
+sam reads demo's notes []         limit=99999                 200 (clamped)
+                                  limit=abc / limit=0         400
 ```
 
 Both merges were verified independently of the agent's own report, by cloning
@@ -227,11 +253,28 @@ quietly excused from it. The k6 container is a sibling, not a child, which the
 prompt says explicitly — the skill worked out the `--network host` and script
 mounting itself.
 
+### A defect this campaign found
+
+Run against a product with three failing requirements, `delivery-agent` wrote a
+complete and accurate report headed "not ready to deliver", and then recorded a
+blocker. Both were defensible readings of its own text, which told it to report
+bad news honestly *and* to block when requirements were not satisfied. That is
+the contradiction OpenAI's 5.6 guidance warns about, and it has a real cost:
+blocking withholds the report someone needs in order to act on the bad news.
+
+The skill now says one thing — a failing product is delivered as "not ready"
+with the failures named, and blocking is reserved for when no honest report can
+be produced at all. Re-run against the identical workspace (`g09`), it completed
+with the same verdict and no blocker.
+
+This is the case for testing skills against something real. Nine of the ten
+GitLab runs passed first time; the tenth found a genuine contradiction that no
+amount of re-reading the skill had surfaced.
+
 ### Still not covered
 
-`delivery-agent`, `ui-designer-agent` and `kickoff-multi` end to end.
-`dev-agent` and `code-review-agent` ran inside g02 and g05 rather than
-standalone against GitLab.
+`dev-agent` and `code-review-agent` have run only inside an orchestrator's
+workflow (`g02`, `g05`, `g10`), never standalone against a GitLab MR.
 
 ## Cost
 
