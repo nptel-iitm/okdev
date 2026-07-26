@@ -1,0 +1,19 @@
+# Variant image for fixtures that need a real browser: the E2E runner, the UI
+# screenshot scorer and the manual spot-checker cannot be honestly tested
+# without one. Kept separate from the base image so runs that do not need a
+# browser do not pay for a 2.6GB base image. Pinned to the tag already present
+# on this host so building it pulls nothing new.
+FROM mcr.microsoft.com/playwright:v1.52.0-noble
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git ripgrep ca-certificates curl python3 python3-pip jq \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip3 install --break-system-packages --no-cache-dir pytest==8.3.4 pytest-cov==6.0.0
+
+ARG CODEX_VERSION=0.145.0
+RUN npm i -g "@openai/codex@${CODEX_VERSION}" && codex --version
+
+# Playwright's browsers live in the image; point every user at them.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+WORKDIR /work
+ENV CODEX_HOME=/codexhome

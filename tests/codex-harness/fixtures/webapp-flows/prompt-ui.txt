@@ -1,0 +1,9 @@
+Use the ui-screenshot-scorer skill against this project.
+
+Start the application yourself with:
+    python3 -m http.server 8080 --directory public &
+It then serves at http://localhost:8080/. Docker is not available in this environment.
+
+The routes to score: http://localhost:8080/ (the sign-in screen), and the same page after signing in with demo@example.com / correct-horse (the notes screen).
+
+Playwright and its browsers are already installed and PLAYWRIGHT_BROWSERS_PATH is set. Run headless.

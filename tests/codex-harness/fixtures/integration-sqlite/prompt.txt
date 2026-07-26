@@ -1,0 +1,7 @@
+Use the integration-test-runner skill against this project.
+
+Docker is not available here, and it is not needed: the database this service
+talks to is SQLite, so tests can and should exercise the real database on a
+temporary file rather than mocking it. pytest is installed.
+
+The boundaries are described in .okdev/architecture.md.

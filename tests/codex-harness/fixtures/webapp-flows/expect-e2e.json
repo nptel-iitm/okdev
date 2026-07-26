@@ -1,0 +1,12 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1500,
+  "files_exist": [".okdev/test-results/e2e-tests.md", ".okdev/run-state.json"],
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/test-results/e2e-tests.md", "pattern": "(?i)(sign.?in|log.?in)"},
+    {"path": ".okdev/test-results/e2e-tests.md", "pattern": "(?i)(title|validation|empty)"},
+    {"path": ".okdev/test-results/e2e-tests.md", "pattern": "(?i)fail"}
+  ]
+}

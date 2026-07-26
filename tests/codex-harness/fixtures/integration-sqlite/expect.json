@@ -1,0 +1,14 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1200,
+  "files_exist": [".okdev/test-results/integration-tests.md", ".okdev/run-state.json"],
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/test-results/integration-tests.md", "pattern": "(?i)(constraint|unique|foreign key)"},
+    {"path": ".okdev/test-results/integration-tests.md", "pattern": "(?i)(change_plan|no-?op|missing subscriber|does not exist)"}
+  ],
+  "commands": [
+    {"cmd": "find . -name 'test*.py' -not -path './.git/*' | head -1 | grep -q .", "expect_exit": 0}
+  ]
+}

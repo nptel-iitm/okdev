@@ -15,6 +15,8 @@
 #   --model <slug>     default gpt-5.6-terra
 #   --effort <level>   low|medium|high|xhigh|max   (default medium)
 #   --timeout <sec>    wall-clock cap for the container (default 900)
+#   --image <tag>      container image; use okdev-codex-browser:0.145.0 for
+#                      fixtures that need a real browser
 #   --runtime <name>   codex (okdev-state + AGENTS.md, default), claude
 #                      (CLAUDE.md only - use for control runs), or none
 #   --compact-at <n>   force auto-compaction once the context passes n tokens.
@@ -52,6 +54,7 @@ while [ $# -gt 0 ]; do
         --model)       MODEL="$2"; shift 2 ;;
         --effort)      EFFORT="$2"; shift 2 ;;
         --timeout)     TIMEOUT="$2"; shift 2 ;;
+        --image)       IMAGE="$2"; shift 2 ;;
         --runtime)     RUNTIME="$2"; shift 2 ;;
         --compact-at)  COMPACT_AT="$2"; shift 2 ;;
         --reuse-work)  REUSE_WORK="$2"; shift 2 ;;

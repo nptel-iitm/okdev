@@ -120,6 +120,18 @@ e2e-test-runner        blocked-no-app           block in 33s when the app  8/8
                                                 is unreachable
 kickoff                kickoff-blocked-env      block when the environment 9/9
                                                 preconditions fail
+integration-test-      integration-sqlite       map every boundary, test   11/11
+  runner                                        against the real database,
+                                                catch a silent no-op
+e2e-test-runner        webapp-flows             drive a real browser over  11/11
+                                                6 flows, catch 2 planted
+                                                product defects
+ui-screenshot-scorer   webapp-flows             screenshot 2 pages x 3     12/12
+                                                viewports, score 7 criteria
+                                                each, fail the bad pages
+manual-spot-checker    webapp-flows             run 8 manual cases by hand 12/12
+                                                in a browser, give an
+                                                honest readiness verdict
 bugfix                 (resumed mid-run)        skip finished phases, fix  see above
                                                 the bug, add a regression
                                                 test, complete
@@ -143,13 +155,40 @@ claude/skills      1085k        0, 1 and 2           requirements.md overwritten
 Both produced a correct fix. The difference is 3.2x the tokens and the loss of
 the previous phase's output.
 
-### Not covered
+### The browser fixture
 
-The skills that need a live browser, a running application or GitLab were
-exercised only on their blocking path: `integration-test-runner`,
-`load-tester`, `ui-screenshot-scorer`, `manual-spot-checker`, `replicate-issue`,
-and the `replicate-*` and `kickoff-multi` coordinators. Their happy paths need a
-real project with its stack up.
+`webapp-flows` is a small notes application served over HTTP, with defects
+planted in three different places so a skill has to actually look:
+
+- a functional one — a note with no title is accepted, though the README says
+  it must be rejected with a validation message;
+- a responsive one — a fixed 900px container, so the page overflows at 768px
+  and 375px;
+- a contrast one — hint text at `#dcdcd6` on a `#fbfbf8` background.
+
+Each skill found what falls in its remit. The E2E runner failed the
+title-validation flow and the 375px flow. The scorer measured a 900px document
+width against a 375px viewport rather than asserting it by eye, and failed
+every page. The spot-checker caught both, plus the absolutely-positioned header
+identity that the scorer had missed, and concluded "not ready for general
+users" with two issues written up well enough to file.
+
+These runs used `Dockerfile.browser`, a variant image with Playwright and its
+browsers, selected with `run-codex.sh --image`.
+
+### Repeats
+
+The behaviours most likely to be flaky were run more than once. Approving clean
+code, stopping a review loop at its budget, and the unit-test pass all repeated
+with identical outcomes (8/8, 10/10, 11/11 on the second and third runs).
+
+### Still not covered
+
+`load-tester` (needs k6 in Docker from inside the container), `replicate-issue`
+and the `replicate-*` / `kickoff-multi` coordinators (need a live GitLab project
+with real issues), and `test-planner-agent`, `dev-agent`, `delivery-agent` and
+`ui-designer-agent` end to end. All were exercised only through their blocking
+paths or as part of another skill's run.
 
 ## Cost
 
