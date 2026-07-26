@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install MegaDev skills and config into a target project
+# Install OKDev skills and config into a target project
 # Usage: ./install-to-project.sh /path/to/your/project
 
 ECOSYSTEM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_DIR="${1:?Usage: $0 /path/to/your/project}"
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 CODEX_SKILLS_DIR="$CODEX_HOME_DIR/skills"
-BACKUP_ROOT="$CODEX_HOME_DIR/megadev-backups"
+BACKUP_ROOT="$CODEX_HOME_DIR/okdev-backups"
 
 ensure_ignore_entry() {
     local ignore_file="$1"
@@ -29,7 +29,7 @@ if [ ! -d "$TARGET_DIR" ]; then
     exit 1
 fi
 
-echo "Installing MegaDev into: $TARGET_DIR"
+echo "Installing OKDev into: $TARGET_DIR"
 
 # Copy Claude skills
 echo "  Copying Claude skills..."
@@ -82,16 +82,20 @@ fi
 
 if [ -f "$ECOSYSTEM_DIR/.mcp.json" ]; then
     cp "$ECOSYSTEM_DIR/.mcp.json" "$TARGET_DIR/.mcp.json"
+    chmod 600 "$TARGET_DIR/.mcp.json"
     ensure_ignore_entry "$TARGET_DIR/.gitignore" ".mcp.json"
 else
     echo "  WARNING: No .mcp.json found. Run setup-all.sh first."
 fi
 
-# Create .megadev directory for runtime artifacts
-mkdir -p "$TARGET_DIR/.megadev/test-results/screenshots/{e2e,ui,manual}"
+# Create .okdev directories for runtime artifacts
+mkdir -p \
+    "$TARGET_DIR/.okdev/test-results/screenshots/e2e" \
+    "$TARGET_DIR/.okdev/test-results/screenshots/ui" \
+    "$TARGET_DIR/.okdev/test-results/screenshots/manual"
 
 echo ""
-echo "MegaDev installed to $TARGET_DIR"
+echo "OKDev installed to $TARGET_DIR"
 echo ""
 echo "Available skills:"
 find "$ECOSYSTEM_DIR/.claude/skills" -name "SKILL.md" | sort | while read f; do

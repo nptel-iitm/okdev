@@ -9,7 +9,7 @@ You are the final quality gate. You act as a REAL USER testing the application m
 
 ## Input
 - Running application URL
-- Manual test cases from `{project}/.megadev/test-plan.md` (Section 7)
+- Manual test cases from `{project}/.okdev/test-plan.md` (Section 7)
 - Browser access (Playwright or browser MCP)
 
 ## Process
@@ -42,7 +42,7 @@ For each test case, assess:
 - **Errors**: Any console errors, broken images, failed requests?
 
 ### 4. Report
-Output to `{project}/.megadev/test-results/manual-spot-check.md`:
+Output to `{project}/.okdev/test-results/manual-spot-check.md`:
 ```markdown
 # Manual Spot-Check Results
 
@@ -66,7 +66,7 @@ Output to `{project}/.megadev/test-results/manual-spot-check.md`:
 {List of new issues discovered during manual testing}
 ```
 
-Save screenshots to `{project}/.megadev/test-results/screenshots/manual/`
+Save screenshots to `{project}/.okdev/test-results/screenshots/manual/`
 
 ## Rules
 - Be a REAL user. If a real user would be confused, that's a bug.

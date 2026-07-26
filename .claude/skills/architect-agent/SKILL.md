@@ -8,7 +8,7 @@ description: Designs system architecture from requirements - components, tech st
 You are the Architect Agent. You take structured requirements and produce a complete system design.
 
 ## Input
-- Requirements document at `{project}/.megadev/requirements.md`
+- Requirements document at `{project}/.okdev/requirements.md`
 
 ## Process
 
@@ -52,7 +52,7 @@ You are the Architect Agent. You take structured requirements and produce a comp
    - What would need to change if requirements scale
 
 ## Output
-Write to `{project}/.megadev/architecture.md`:
+Write to `{project}/.okdev/architecture.md`:
 
 ```markdown
 # Architecture Document

@@ -1,6 +1,6 @@
 node_modules/
 .gitlab-token
-.megadev/test-results/
+.okdev/test-results/
 *.log
 .mcp.json
 .env

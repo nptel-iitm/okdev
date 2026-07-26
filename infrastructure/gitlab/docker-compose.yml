@@ -1,7 +1,7 @@
 services:
   gitlab:
     image: gitlab/gitlab-ce:18.9.2-ce.0
-    container_name: megadev-gitlab
+    container_name: okdev-gitlab
     hostname: gitlab.local
     restart: unless-stopped
     environment:
@@ -21,8 +21,8 @@ services:
         gitlab_kas['enable'] = false
 
         # Git settings
-        gitlab_rails['initial_root_password'] = 'MegaDev2024!'
-        gitlab_rails['display_initial_root_password'] = true
+        gitlab_rails['initial_root_password'] = '${GITLAB_ROOT_PASSWORD:?Set GITLAB_ROOT_PASSWORD in infrastructure/gitlab/.env}'
+        gitlab_rails['display_initial_root_password'] = false
 
         # Performance tuning
         gitaly['configuration'] = { concurrency: [{ rpc: '/gitaly.SmartHTTPService/PostReceivePack', max_per_repo: 3 }] }

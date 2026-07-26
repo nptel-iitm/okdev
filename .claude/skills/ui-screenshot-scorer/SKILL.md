@@ -56,7 +56,7 @@ For each page + viewport combination:
 - PASS if average ≥ 7/10, FAIL otherwise
 
 ### 4. Report
-Output to `{project}/.megadev/test-results/ui-scores.md`:
+Output to `{project}/.okdev/test-results/ui-scores.md`:
 ```markdown
 # UI Screenshot Scores
 
@@ -76,7 +76,7 @@ Output to `{project}/.megadev/test-results/ui-scores.md`:
 {List of UI improvements needed}
 ```
 
-Save all screenshots to `{project}/.megadev/test-results/screenshots/ui/`
+Save all screenshots to `{project}/.okdev/test-results/screenshots/ui/`
 
 ## Rules
 - Every page must be screenshotted. Don't skip "simple" pages.

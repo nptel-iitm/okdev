@@ -4,7 +4,7 @@ set -euo pipefail
 ECOSYSTEM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "============================================"
-echo "  MegaDev — Full System Setup"
+echo "  Over Kill Dev (OKDev) — Full System Setup"
 echo "============================================"
 echo ""
 
@@ -43,7 +43,7 @@ bash "$ECOSYSTEM_DIR/hooks/env-validator.sh"
 
 echo ""
 echo "============================================"
-echo "  MegaDev Setup Complete!"
+echo "  Over Kill Dev (OKDev) Setup Complete!"
 echo "============================================"
 echo ""
 echo "Directory structure:"
@@ -60,4 +60,4 @@ echo "             then invoke \$kickoff"
 echo ""
 echo "Note: Codex skills are installed by install-to-project.sh, not by setup-all.sh alone."
 echo ""
-echo "GitLab: http://gitlab.local:8929 (root / MegaDev2024!)"
+echo "GitLab: http://gitlab.local:8929 (root; password configured in infrastructure/gitlab/.env)"

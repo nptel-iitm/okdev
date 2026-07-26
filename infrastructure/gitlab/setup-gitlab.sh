@@ -3,11 +3,43 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GITLAB_URL="http://localhost:8929"
-GITLAB_ROOT_PASSWORD="MegaDev2024!"
-GITLAB_CONTAINER_NAME="megadev-gitlab"
+GITLAB_CONTAINER_NAME="okdev-gitlab"
 TOKEN_FILE="$SCRIPT_DIR/.gitlab-token"
+ENV_FILE="$SCRIPT_DIR/.env"
+PLACEHOLDER_PASSWORD="replace-with-a-strong-local-password"
 
-echo "=== MegaDev GitLab Setup ==="
+if [ -z "${GITLAB_ROOT_PASSWORD+x}" ] && [ -f "$ENV_FILE" ]; then
+    PASSWORD_ENTRY_COUNT=0
+    while IFS= read -r ENV_LINE || [ -n "$ENV_LINE" ]; do
+        ENV_LINE="${ENV_LINE%$'\r'}"
+        case "$ENV_LINE" in
+            GITLAB_ROOT_PASSWORD=*)
+                PASSWORD_ENTRY_COUNT=$((PASSWORD_ENTRY_COUNT + 1))
+                GITLAB_ROOT_PASSWORD="${ENV_LINE#GITLAB_ROOT_PASSWORD=}"
+                ;;
+        esac
+    done < "$ENV_FILE"
+
+    if [ "$PASSWORD_ENTRY_COUNT" -gt 1 ]; then
+        echo "ERROR: $ENV_FILE contains multiple GITLAB_ROOT_PASSWORD entries."
+        exit 1
+    fi
+fi
+
+if [ -z "${GITLAB_ROOT_PASSWORD:-}" ]; then
+    echo "ERROR: GITLAB_ROOT_PASSWORD is not configured."
+    echo "Copy $SCRIPT_DIR/.env.example to $ENV_FILE and set a strong local password."
+    exit 1
+fi
+
+if [ "$GITLAB_ROOT_PASSWORD" = "$PLACEHOLDER_PASSWORD" ]; then
+    echo "ERROR: Replace the placeholder GITLAB_ROOT_PASSWORD in $ENV_FILE."
+    exit 1
+fi
+
+export GITLAB_ROOT_PASSWORD
+
+echo "=== Over Kill Dev (OKDev) GitLab Setup ==="
 
 # Step 1: Add gitlab.local to /etc/hosts if not present
 if ! grep -q "gitlab.local" /etc/hosts 2>/dev/null; then
@@ -57,7 +89,7 @@ else
     TOKEN_RESPONSE="$(docker exec "$GITLAB_CONTAINER_NAME" gitlab-rails runner "
       user = User.find_by_username('root')
       token = user.personal_access_tokens.create!(
-        name: 'megadev-token-api',
+        name: 'okdev-token-api',
         expires_at: 365.days.from_now,
         scopes: [:api]
       )
@@ -69,23 +101,25 @@ if [ -z "$TOKEN_RESPONSE" ] || [ "$TOKEN_RESPONSE" = "TOKEN_CREATE_FAILED" ]; th
     echo "Token may already exist. Check .gitlab-token file or create manually."
 else
     echo "$TOKEN_RESPONSE" > "$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE"
     echo "Token saved to $TOKEN_FILE"
 fi
 
-# Step 5: Create the MegaDev group
-echo "Setting up MegaDev group..."
+# Step 5: Create the Over Kill Dev group
+echo "Setting up Over Kill Dev group..."
 TOKEN="$(cat "$TOKEN_FILE" 2>/dev/null || echo "")"
 if [ -n "$TOKEN" ]; then
     if curl -sf --header "PRIVATE-TOKEN: $TOKEN" \
-        "$GITLAB_URL/api/v4/groups/megadev" \
+        "$GITLAB_URL/api/v4/groups/okdev" \
         > /dev/null 2>&1; then
-        echo "MegaDev group already exists."
+        echo "Over Kill Dev group already exists."
     else
         curl -sf --header "PRIVATE-TOKEN: $TOKEN" \
             "$GITLAB_URL/api/v4/groups" \
-            --data "name=MegaDev&path=megadev&visibility=internal" \
+            --data-urlencode "name=Over Kill Dev" \
+            --data "path=okdev&visibility=internal" \
             -o /dev/null 2>/dev/null
-        echo "MegaDev group created."
+        echo "Over Kill Dev group created."
     fi
 fi
 
@@ -93,7 +127,8 @@ echo ""
 echo "=== GitLab Setup Complete ==="
 echo "URL:      $GITLAB_URL"
 echo "Username: root"
-echo "Password: $GITLAB_ROOT_PASSWORD"
-echo "Token:    $(cat "$TOKEN_FILE" 2>/dev/null || echo 'check .gitlab-token')"
+echo "Password: configured locally in $ENV_FILE (not displayed)"
+echo "Token:    stored in $TOKEN_FILE (not displayed)"
+echo "Note: the configured initial password only applies to a fresh GitLab data volume."
 echo ""
 echo "Next: Run the MCP server setup script."

@@ -8,7 +8,7 @@ description: Reproduces a GitLab bug from an issue URL, collects evidence via Pl
 You are a QA investigator. Given a GitLab issue URL, your job is to **reproduce the reported bug**, **collect evidence**, and **post a detailed debugging report** back to the issue — without fixing anything.
 
 ## Input
-The user provides a GitLab issue URL (e.g., `http://gitlab.local:8929/megadev/qptool-author/-/issues/18`).
+The user provides a GitLab issue URL (e.g., `http://gitlab.local:8929/okdev/qptool-author/-/issues/18`).
 
 ## Steps
 
