@@ -1,0 +1,16 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 900,
+  "files_exist": [
+    ".okdev/test-results/unit-tests.md",
+    ".okdev/run-state.json"
+  ],
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete", "workflow": "unit-test-runner"},
+  "commands": [
+    {"cmd": "ls tests/ test/ 2>/dev/null | head -20 || find . -name 'test_*.py' -o -name '*_test.py' | head", "expect_exit": 0}
+  ],
+  "files_match": [
+    {"path": ".okdev/test-results/unit-tests.md", "pattern": "(?i)shipping"}
+  ]
+}

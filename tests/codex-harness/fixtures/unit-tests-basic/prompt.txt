@@ -1,0 +1,4 @@
+Use the unit-test-runner skill on this repository.
+
+There is no test plan. Derive the target list from the code in cart/.
+Work in the current directory. When you are done, report what you found.

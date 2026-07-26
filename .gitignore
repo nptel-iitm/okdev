@@ -6,3 +6,6 @@ node_modules/
 .env
 .env.local
 plan.md
+
+# Codex harness scratch (lives on the data volume, never in the repo)
+tests/codex-harness/.lab/
