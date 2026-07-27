@@ -66,6 +66,23 @@ EXPLICIT_DELEGATION = re.compile(
     r"(delegate|sub-?agent|spawn|hand off to|dispatch)", re.IGNORECASE
 )
 
+# Skills that own merging work into main, not just producing branches.
+MERGE_OWNERS = {
+    "tech-lead-agent",
+    "bugfix",
+    "kickoff",
+    "kickoff-multi",
+    "replicate-and-kickoff",
+    "replicate-and-kickoff-multi",
+}
+
+# Telling a sub-agent to stay one level deep cancels its own delegation.
+DEPTH_CAP = re.compile(
+    r"(keep the (agent )?graph one level deep|one level deep|"
+    r"do not spawn (your own|further) sub-?agents|no nested sub-?agents)",
+    re.IGNORECASE,
+)
+
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
     if not text.startswith("---"):
@@ -143,6 +160,27 @@ def check(path: Path) -> tuple[list[str], list[str]]:
             "is an orchestrator but never explicitly asks for delegation; "
             "GPT-5.6 will not spawn sub-agents unless a skill says so outright"
         )
+
+    # A skill that tells a sub-agent to keep the graph one level deep is telling
+    # it not to delegate at all, because the sub-agent is already that level.
+    # tech-lead-agent said "delegate to a dev-agent" and "keep the graph one
+    # level deep" in the same file, and did not delegate.
+    if DEPTH_CAP.search(body):
+        errors.append(
+            "caps sub-agent depth; a delegated skill is already one level deep, "
+            "so this cancels its own delegation instruction"
+        )
+
+    # Owning a merge is what makes an issue finished. A skill that drives issues
+    # but whose completion bar never mentions merging can finish with a pile of
+    # open MRs and report success.
+    if path.parent.name in MERGE_OWNERS:
+        done = body.split("## Done when", 1)[-1]
+        if not re.search(r"\bmerged?\b", done, re.IGNORECASE):
+            errors.append(
+                "drives issues to merge requests but its '## Done when' bar "
+                "never requires a merge"
+            )
 
     return errors, warnings
 

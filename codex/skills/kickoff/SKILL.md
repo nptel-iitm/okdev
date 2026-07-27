@@ -51,10 +51,33 @@ the API token in `.mcp.json` authenticates against it, and
 command and error — every later phase depends on these, so continuing produces
 work that cannot be verified.
 
+## Keep the written artifacts short
+
+Every document written in an early phase is re-read by every later phase and by
+every worker, on every turn. A 500-line requirements document and an 850-line
+architecture are not thoroughness; they are a tax charged repeatedly for the
+rest of the run, and they are the difference between a kickoff that finishes and
+one that runs out of budget half-built.
+
+Budgets, and they are limits rather than targets:
+
+```
+.okdev/requirements.md   <= 150 lines
+.okdev/architecture.md   <= 250 lines
+.okdev/ui-design.md      <= 150 lines
+```
+
+Write decisions, not explanations. Name the stack, the data model, the module
+boundaries, the risks and the build order. Do not restate the brief, do not
+restate requirements inside the architecture, and do not write prose that a
+table would carry. If something genuinely needs more room, put it in its own
+file that only the phase which needs it will open.
+
 ## Phase: requirements
 
 Delegate to `requirements-agent`. Transcribe any audio input first with Whisper
-via Docker. The output is `{project}/.okdev/requirements.md`.
+via Docker. The output is `{project}/.okdev/requirements.md`, within the budget
+above.
 
 Read its ambiguities list. Resolve the ones you can from the source material or
 from ordinary convention, and record the resolution. If one would materially
@@ -78,8 +101,26 @@ assumption you are proceeding on, so the user can redirect early if it is wrong:
 ## Phase: setup and implementation
 
 Delegate to `tech-lead-agent`, which creates the GitLab project and board,
-breaks the architecture into issues, and drives each one through the bounded
-review loop to a merge.
+breaks the architecture into issues, and drives each one **to a merge** before
+starting the next.
+
+Scale the issue count to the brief. Six to eight issues is a term's work, not a
+first delivery. A brief of a page or two should produce three to five issues
+that each deliver something demonstrable; splitting the same product into eight
+does not make it better built, it multiplies the review rounds and the context
+every later phase carries. Ask for a walking skeleton first, then one issue per
+capability the brief actually names.
+
+Before you accept this phase as done, check the two things a tech lead's own
+report cannot tell you:
+
+```
+git -C {project} log --oneline main | head        # did anything merge?
+git -C {project} branch -r --merged origin/main   # which branches are in?
+```
+
+If issues are "complete" but `main` has only the seed commit, the phase is not
+done however good the branches look.
 
 If it comes back blocked, record what merged and what did not, and continue to
 testing with what exists — a partially built system with an honest report is
@@ -105,11 +146,14 @@ Append each phase transition and its outcome to
 
 ## Done when
 
-Requirements, architecture, test report and delivery report all exist, every
-issue is merged or explicitly open with a reason, and the delivery report states
-an honest readiness verdict. Then run `.okdev/bin/okdev-state complete`.
+Requirements, architecture, test report and delivery report all exist, **the
+merged `main` runs the product**, every issue is merged or explicitly open with
+a stated reason, and the delivery report states an honest readiness verdict.
+Then run `.okdev/bin/okdev-state complete`.
 
 Delivering a working subset with a clear list of what is unfinished is success.
+Delivering eight open merge requests and an empty `main` is not, and neither is
+running out of room before `delivery` because the early phases wrote too much.
 
 ## Stop when
 
