@@ -399,6 +399,60 @@ The review verdict was APPROVED with no findings, which is correct for a
 one-line fix and is what `code-review-agent` is written to produce. It ran the
 suite itself instead of trusting the author and pinned the head SHA it reviewed.
 
+
+## Hardening the two flows that did not finish
+
+Both defects the greenfield run exposed were instructed by the skills.
+
+`tech-lead-agent` said "delegate to a dev-agent" on line 57 and "keep the graph
+one level deep" on line 92. Under `kickoff` the tech lead *is* that one level,
+so the cap cancelled the delegation twelve lines above it, and it implemented
+all eight issues itself. "Issues with no dependency between them can run at the
+same time" is what produced four branches cut from the empty commit.
+
+The cost was the artifacts, not the model tier: 2094 lines of requirements,
+architecture and UI design, re-read by every later phase and every worker on
+every turn.
+
+Re-tested on a fresh greenfield project, LoanBox, from a one-page brief:
+
+```
+                       before (e2e-02)        after (e2e-07)
+artifacts                2094 lines             505 lines
+issues                   8, filed upfront       5, filed one at a time
+dev-agent                never spawned          spawned, TDD against PostgreSQL
+branch ancestry          4/8 from empty commit  merge-base == main tip
+merged                   0 of 8                 issue #1 merged and closed
+loop key                 review:issue-N         review:mr-N, as specified
+loop reset after merge   never reached          reset to {}
+budget at 47 minutes     ~9% and climbing       29%, flat
+```
+
+The bounded loop earned its cost on the first issue: round 1 caught static
+assets 404ing in the deployed image, which the unit tests could not see, and
+round 2 caught a focus indicator at 2.15:1 against a 3:1 WCAG floor. Both were
+fixed test-first with the red test demonstrated, and re-reviewed by a fresh
+reviewer at the new head.
+
+`replicate-issue` now runs the project's suite and checks `git log` before
+opening a browser:
+
+```
+                    before (e2e-04)      after (e2e-06)
+duration            602s                 430s
+input tokens        2.1M                 1.6M
+ran the suite       no (0 invocations)   yes - "1 failed, 27 passed"
+named the commit    no                   yes - e96991e, "changed > to >="
+```
+
+Faster, cheaper and more accurate together: a failing test beside the commit
+that caused it is a shorter path than reconstructing the cause from a browser.
+
+Two lint rules now hold these invariants, and both were checked against a
+deliberately broken copy of the tree rather than assumed to work: a skill that
+caps sub-agent depth, and a merge-owning skill whose completion bar never
+mentions merging.
+
 ## Cost
 
 Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT

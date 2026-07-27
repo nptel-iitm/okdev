@@ -1,7 +1,7 @@
 $replicate-issue
 
-Investigate issue #9 of okdev/labslots:
-http://gitlab.local:8929/okdev/labslots/-/issues/9
+Investigate issue #10 of okdev/labslots:
+http://gitlab.local:8929/okdev/labslots/-/issues/10
 
 Environment:
 - GitLab is at http://gitlab.local:8929. The API token is in the GITLAB_TOKEN

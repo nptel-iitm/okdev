@@ -52,12 +52,41 @@ later issue assumes the stack runs.
 When an issue turns out to be too big once someone starts it, split it rather
 than letting it sprawl.
 
-## The review loop
+## One issue at a time, and merge before the next one starts
 
-For each issue in dependency order: move it to In Progress, delegate to a
-dev-agent with the issue, the relevant architecture section, and the branch name
-`feature/{number}-{slug}` in the prompt. When the MR appears, move the issue to
-Review and work this loop.
+This is the shape of the whole phase, and getting it wrong is expensive:
+
+```
+for each issue, in dependency order:
+    git fetch && git checkout main && git pull      <- start from merged main
+    branch feature/{number}-{slug} FROM main
+    delegate implementation to a dev-agent
+    review loop (below) until APPROVED
+    merge
+    only now move to the next issue
+```
+
+**Branch from the current `main` every time, after the previous issue merged.**
+Not from the initial commit, not from your own working tree, not from the
+previous feature branch. A run that opens every branch before merging anything
+produces branches that each re-implement the whole product and cannot be merged
+in sequence — and it will still look correct in your own log.
+
+Before you open an MR, prove the base is right:
+
+```
+git merge-base --is-ancestor origin/main HEAD && echo "branched from current main"
+```
+
+**Do not implement the issue yourself.** Delegate it to a dev-agent, and give
+that worker exactly what it needs: the issue text, the *relevant section* of the
+architecture, and the branch name. Do not paste whole documents into a worker
+prompt — a worker that receives the full architecture pays for it on every turn
+it takes, and that cost is what makes long runs unaffordable.
+
+You review, you merge, you own the budgets. You do not write the feature.
+
+When the MR appears, move the issue to Review and work this loop.
 
 Count the round before you run it:
 
@@ -87,9 +116,17 @@ it.
 
 ## Parallel work
 
-Issues with no dependency between them can run at the same time — delegate one
-worker per issue, each with what it needs in its prompt. Keep the graph one
-level deep. When two branches conflict, you resolve the conflict.
+The default is sequential: merge each issue before starting the next. It is
+slower in wall-clock and far cheaper in every other way, and it is the only
+shape that keeps `main` honest.
+
+Run two issues at once only when both are true: they touch disjoint files, and
+you can merge the first before the second opens its MR. Anything else costs more
+in conflict resolution than it saves. Never have more than one unmerged MR per
+area of the codebase.
+
+You may spawn sub-agents freely — a worker you spawn can spawn its own helpers.
+Depth is not the constraint; unmerged parallel branches are.
 
 ## Report
 
@@ -98,11 +135,21 @@ blocked and why.
 
 ## Done when
 
-Every issue is merged, or blocked with a recorded reason. The board reflects
-reality. Then run `.okdev/bin/okdev-state complete --workflow tech-lead-agent`.
+All four hold:
+
+1. Every issue is **merged into `main`**, or blocked with a recorded reason. An
+   open MR is not a finished issue.
+2. Every merged branch descended from the `main` that existed when it was cut —
+   `git merge-base --is-ancestor` held for each.
+3. Each implementation was written by a **dev-agent you delegated to**, not by
+   you.
+4. The board reflects reality.
+
+Then run `.okdev/bin/okdev-state complete --workflow tech-lead-agent`.
 
 Finishing with three issues merged and one blocked is a real outcome — report it
-rather than grinding on the blocked one.
+rather than grinding on the blocked one. Finishing with four issues in open MRs
+is not a real outcome, however good the branches look.
 
 ## Stop when
 

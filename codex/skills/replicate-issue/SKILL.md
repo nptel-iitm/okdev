@@ -38,9 +38,26 @@ Read the issue and all its comments first, and separate three things: what the
 reporter expected, what they observed, and what the acceptance criteria require.
 Comments often carry the detail that makes a bug reproducible.
 
-Write a Playwright script that sets up the preconditions the bug needs — the
-users, the data, the starting page — then exercises each acceptance criterion in
-turn. Use a real browser against the real application. For a bug involving two
+**Run the project's own test suite before you open a browser.** It costs
+seconds and it answers the question directly more often than you would expect:
+a bug reported after a change is usually a regression, and a regression usually
+turns something red. Note what fails, and check `git log` for what landed around
+the time the reporter noticed it.
+
+```
+docker compose exec -T <service> python -m pytest -q     # or the project's runner
+git log --oneline -15
+```
+
+A failing test naming the broken behaviour, next to a commit that touched it, is
+the cause — the browser work then becomes confirmation for the report rather
+than the search itself. Say in the report whether the suite was green or red,
+either way: "the suite passes, so this is not covered" is as useful to the fixer
+as a failing test name.
+
+Then write a Playwright script that sets up the preconditions the bug needs —
+the users, the data, the starting page — and exercises each acceptance criterion
+in turn. Use a real browser against the real application. For a bug involving two
 users, drive two browser contexts with separate sessions rather than simulating
 the second user. For a timing or polling bug, wait on the actual condition and
 confirm the backend state with an API call.
@@ -77,8 +94,9 @@ Upload the screenshots to GitLab, then post two comments on the issue:
 
 ## Done when
 
-Every acceptance criterion has a status backed by evidence, the screenshots are
-uploaded, both comments are posted, and no product code changed. Then run
+Every acceptance criterion has a status backed by evidence, the existing test
+suite has been run and its result stated, the screenshots are uploaded, both
+comments are posted, and no product code changed. Then run
 `.okdev/bin/okdev-state complete --workflow replicate-issue`.
 
 ## Stop when
