@@ -185,7 +185,36 @@ if [ "$GITLAB" = "1" ]; then
     DOCKER_EXTRA+=(-e "GITLAB_URL=http://gitlab.local:8929")
 fi
 
+# Budget kill-switch. The pre-flight check above only guards the moment a run
+# starts; a long run can spend the rest of the window after it. The first time
+# this harness was used for a full kickoff, the ceiling was enforced by a
+# watchdog in the calling shell - the session died, the watchdog died with it,
+# the container carried on, and the run overshot its ceiling by 13 points.
+#
+# So the watchdog is detached with setsid: it outlives this script, this shell
+# and the session, and it kills the run by container name. It exits on its own
+# once the container is gone, so it cannot leak.
+CONTAINER_NAME="okdev-run-$RUN_ID"
+CEILING="${OKDEV_BUDGET_CEILING:-12}"
+setsid bash -c '
+    name="$1"; ceiling="$2"; budget="$3"
+    sleep 30
+    while docker inspect "$name" >/dev/null 2>&1; do
+        used=$(bash "$budget" used 2>/dev/null || echo 0)
+        case "$used" in ""|*[!0-9]*) used=0 ;; esac
+        if [ "$used" -ge "$ceiling" ]; then
+            echo "budget watchdog: ${used}% >= ${ceiling}% - killing $name" >&2
+            docker kill "$name" >/dev/null 2>&1
+            exit 3
+        fi
+        sleep 45
+    done
+' _ "$CONTAINER_NAME" "$CEILING" "$REPO_DIR/tests/codex-harness/budget.sh" \
+    > "$RUN_DIR/watchdog.log" 2>&1 < /dev/null &
+WATCHDOG_PID=$!
+
 timeout "$TIMEOUT" docker run --rm -i \
+    --name "$CONTAINER_NAME" \
     --user "$(id -u):$(id -g)" \
     --network "$NETWORK" \
     "${DOCKER_EXTRA[@]+"${DOCKER_EXTRA[@]}"}" \
@@ -208,6 +237,17 @@ timeout "$TIMEOUT" docker run --rm -i \
 EXIT_CODE=$?
 set -e
 ENDED=$(date +%s)
+
+# The watchdog exits by itself when the container disappears, but do not make
+# the next run wait on that poll interval.
+kill "$WATCHDOG_PID" 2>/dev/null || true
+KILLED_BY_BUDGET=0
+if grep -q "budget watchdog" "$RUN_DIR/watchdog.log" 2>/dev/null; then
+    KILLED_BY_BUDGET=1
+    echo "run-codex: RUN STOPPED BY BUDGET WATCHDOG" >&2
+    cat "$RUN_DIR/watchdog.log" >&2
+fi
+
 USED_AFTER=$(bash "$REPO_DIR/tests/codex-harness/budget.sh" used)
 
 mv "$RUN_DIR/work/.okdev-last-message" "$RUN_DIR/last-message" 2>/dev/null || \
@@ -215,6 +255,7 @@ mv "$RUN_DIR/work/.okdev-last-message" "$RUN_DIR/last-message" 2>/dev/null || \
 
 RUN_ID="$RUN_ID" MODEL="$MODEL" EFFORT="$EFFORT" EXIT_CODE="$EXIT_CODE" \
 STARTED="$STARTED" ENDED="$ENDED" TIMEOUT="$TIMEOUT" \
+KILLED_BY_BUDGET="$KILLED_BY_BUDGET" CEILING="$CEILING" \
 USED_BEFORE="$USED_BEFORE" USED_AFTER="$USED_AFTER" BASE_SHA="$BASE_SHA" \
 python3 - "$RUN_DIR" <<'PY'
 import json, os, sys
@@ -267,6 +308,8 @@ result = {
     "commands_run": commands,
     "threads": threads,
     "subagents": max(0, threads - 1),
+    "killed_by_budget": os.environ.get("KILLED_BY_BUDGET") == "1",
+    "budget_ceiling": int(os.environ.get("CEILING", "0")),
     "usage": totals,
     "budget_percent_before": int(os.environ["USED_BEFORE"]),
     "budget_percent_after": int(os.environ["USED_AFTER"]),
