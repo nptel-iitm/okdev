@@ -75,7 +75,9 @@ echo "created labels"
 # The workspace the agent wakes up in: the brief, a token it can authenticate
 # with, and a remote it can push to.
 mkdir -p "$WORKSPACE"
-cp "$REPO_DIR/tests/codex-harness/fixtures/greenfield-labslots/repo/BRIEF.md" "$WORKSPACE/BRIEF.md"
+BRIEF="${OKDEV_GREENFIELD_BRIEF:-$REPO_DIR/tests/codex-harness/fixtures/greenfield-labslots/repo/BRIEF.md}"
+[ -f "$BRIEF" ] || { echo "brief not found: $BRIEF" >&2; exit 2; }
+cp "$BRIEF" "$WORKSPACE/BRIEF.md"
 
 cat > "$WORKSPACE/.mcp.json" <<JSON
 {
