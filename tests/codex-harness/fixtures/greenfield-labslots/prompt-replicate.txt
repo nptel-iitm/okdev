@@ -1,7 +1,7 @@
 $replicate-issue
 
-Investigate issue #1 of okdev/labslots:
-http://gitlab.local:8929/okdev/labslots/-/issues/1
+Investigate issue #9 of okdev/labslots:
+http://gitlab.local:8929/okdev/labslots/-/issues/9
 
 Environment:
 - GitLab is at http://gitlab.local:8929. The API token is in the GITLAB_TOKEN
@@ -19,3 +19,10 @@ Environment:
 
 Reproduce the reported behaviour and report your findings to the issue. Do not
 fix it.
+
+Notes on this project:
+- The app is a Django/PostgreSQL stack. `docker compose up -d` from the repo
+  root brings it up on port 18120; reach it at http://host.docker.internal:18120.
+- `.env.example` is the template for `.env`. Demo accounts are seeded by
+  `python manage.py seed_demo` (SEED_DEMO_DATA=true does it on boot).
+- Clone the project fresh from GitLab rather than assuming a checkout exists.

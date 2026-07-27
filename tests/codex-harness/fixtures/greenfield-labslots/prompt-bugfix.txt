@@ -1,7 +1,7 @@
 $bugfix
 
-Fix issue #1 of okdev/labslots:
-http://gitlab.local:8929/okdev/labslots/-/issues/1
+Fix issue #9 of okdev/labslots:
+http://gitlab.local:8929/okdev/labslots/-/issues/9
 
 The investigation findings are already posted as a comment on that issue.
 
@@ -20,3 +20,9 @@ Environment:
 - Sub-agents are available. Delegate as your instructions describe.
 
 Take it through to a merged MR with a regression test, and report what merged.
+
+Notes on this project:
+- Django/PostgreSQL. `docker compose up -d` brings it up on port 18120; reach
+  it at http://host.docker.internal:18120. Copy `.env.example` to `.env`.
+- Unit tests: `docker compose exec -T web python -m pytest -q`.
+- Clone fresh from GitLab rather than assuming a checkout exists.

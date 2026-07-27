@@ -328,6 +328,77 @@ The reliable signal is the thread count: Codex writes one
 sub-agents. `run-codex.sh` now records it in `result.json` as `threads` and
 `subagents`.
 
+
+## End to end on a greenfield project: kickoff, plant a bug, replicate, fix
+
+The campaign above tested skills against a seeded app. This one built a product
+from a brief, broke it, and drove the break through investigation and repair.
+Brief: LabSlots, teaching-lab bench booking with capacity, an ordered waitlist,
+overlap rules, a cancellation cut-off and a utilisation report.
+
+```
+run     skill              outcome                                     cost
+e2e-02  kickoff            requirements 501 lines, architecture 853,   ~19 pts
+                           ui-design 727, 8 issues, 8 MRs, all
+                           reviewed, 8 review budgets at 1 of 3
+e2e-04  replicate-issue    reproduced in a real browser at the          ~0 pts
+                           reported scale, named the cause exactly,
+                           5 screenshots, changed no product code
+e2e-05  bugfix             MR !9 merged, issue #9 closed, 4 regression  1 pt
+                           tests, 6 sub-agents, all 6 phases complete
+```
+
+`kickoff` never merged anything, so `main` was assembled by hand before the bug
+could be planted. See the branch-ancestry defect below.
+
+### The planted regression
+
+One line was pushed straight to `main` as "refactor: simplify waitlist position
+query": the `status=WAITLISTED` predicate was dropped from `waitlist_position()`,
+so a waiting student is shown a number that counts confirmed and historical
+rows. Issue #9 described symptoms only - no file, function or cause.
+
+Baseline before, symptom after, and after the fix, measured the same way each
+time from a fresh clone on an isolated compose project:
+
+```
+                    baseline    with bug    after fix
+join             -> B=1, C=2    B=2, C=3    B=1, C=2
+after promotion  -> C=1         C=3         C=1
+full suite       -> 24 passed   1 failed    28 passed
+```
+
+### What replicate-issue got right, and the one thing it missed
+
+It reproduced at the reported scale - 12 confirmed students, then two waitlist
+joins - and captured the wrong strings verbatim from the rendered UI ("You
+joined the waitlist at position 13." for the only person waiting). It named the
+cause as `waitlist_position()` failing to limit prior rows to
+`status=WAITLISTED`, which is exactly the planted diff. It scoped its claims
+correctly, reporting capacity, FIFO ordering and promotion as working, which
+was true. It rejected a false positive from a fixture collision and reran clean
+rather than reporting it. It changed no product code.
+
+**It never ran `pytest`** - zero invocations. The planted commit turned
+`test_full_session_adds_fifo_waitlist` red, so the suite was failing throughout
+the investigation and the report does not mention it. For a regression, `git
+log` plus the test suite is the cheapest route to the answer.
+
+### What bugfix demonstrated that kickoff did not
+
+- **Delegated the implementation** to a worker that "will not merge its own MR".
+- **Used the loop key the skill specifies**, `review:mr-9`, where kickoff wrote
+  `review:issue-N`.
+- **Merged**, and let the merge close the issue.
+
+The fix was the exact inverse of the planted diff, one line, no collateral
+edits. Its four regression tests close the coverage gap the *investigation*
+report had named - one skill acting on another's finding.
+
+The review verdict was APPROVED with no findings, which is correct for a
+one-line fix and is what `code-review-agent` is written to produce. It ran the
+suite itself instead of trusting the author and pinned the head SHA it reviewed.
+
 ## Cost
 
 Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT
