@@ -10,6 +10,18 @@ effort: medium
 Implement exactly one issue, with tests, and hand it to review as a merge
 request. You write the code; someone else decides it is good enough.
 
+## Scope of the ceremony
+
+The issue arrives already specified: someone has written the requirements, the
+architecture and the acceptance criteria, and a reviewer will check your work
+against them. So do not re-run the discovery that produced them. Skip
+brainstorming, option exploration and approval gates — including any offered by
+other installed skills — and go straight to the tests and the code.
+
+Test-first still applies: write the failing test, make it pass, keep the suite
+green. That is the discipline worth its cost. Deciding *what* to build is not
+your decision to re-open, and a scaffolding issue does not need a design phase.
+
 ## Start here
 
 Run `.okdev/bin/okdev-state next`. If `.okdev/run-state.json` shows you were
