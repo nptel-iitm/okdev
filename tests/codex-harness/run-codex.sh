@@ -196,8 +196,15 @@ fi
 # once the container is gone, so it cannot leak.
 CONTAINER_NAME="okdev-run-$RUN_ID"
 CEILING="${OKDEV_BUDGET_CEILING:-12}"
+# A percentage ceiling fails OPEN when the weekly window rolls over mid-run:
+# used_percent drops to 0, `used >= ceiling` stops being true, and the run keeps
+# spending against a fresh allowance nobody authorised. Seen for real during the
+# LoanBox build. Record the starting reading so the watchdog can also stop on
+# *delta* spent, which survives a reset.
+START_USED="$(bash "$REPO_DIR/tests/codex-harness/budget.sh" used 2>/dev/null || echo 0)"
+DELTA_CAP="${OKDEV_BUDGET_DELTA:-100}"
 setsid bash -c '
-    name="$1"; ceiling="$2"; budget="$3"
+    name="$1"; ceiling="$2"; budget="$3"; start="$4"; delta_cap="$5"
     sleep 30
     while docker inspect "$name" >/dev/null 2>&1; do
         used=$(bash "$budget" used 2>/dev/null || echo 0)
@@ -207,9 +214,17 @@ setsid bash -c '
             docker kill "$name" >/dev/null 2>&1
             exit 3
         fi
+        # Survives a weekly-window reset, which zeroes used_percent and would
+        # otherwise disarm the ceiling above for the rest of the run.
+        if [ "$used" -ge "$start" ]; then spent=$((used - start)); else spent="$used"; fi
+        if [ "$spent" -ge "$delta_cap" ]; then
+            echo "budget watchdog: spent ${spent} points (cap ${delta_cap}) - killing $name" >&2
+            docker kill "$name" >/dev/null 2>&1
+            exit 3
+        fi
         sleep 45
     done
-' _ "$CONTAINER_NAME" "$CEILING" "$REPO_DIR/tests/codex-harness/budget.sh" \
+' _ "$CONTAINER_NAME" "$CEILING" "$REPO_DIR/tests/codex-harness/budget.sh" "$START_USED" "$DELTA_CAP" \
     > "$RUN_DIR/watchdog.log" 2>&1 < /dev/null &
 WATCHDOG_PID=$!
 
