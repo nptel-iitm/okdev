@@ -453,6 +453,36 @@ deliberately broken copy of the tree rather than assumed to work: a skill that
 caps sub-agent depth, and a merge-owning skill whose completion bar never
 mentions merging.
 
+
+### kickoff reaching `status: complete`
+
+LoanBox, from a one-page brief to a delivered product, across four sessions
+connected only by `.okdev/run-state.json`:
+
+```
+phases_done: environment, requirements, architecture, implement, testing, delivery
+status:      complete
+
+22 commits on main       7 merge requests, all merged
+9 issues: 7 closed, 2 open and named
+67/67 tests passing      96.94% statement coverage
+verdict: "Ready for internal/pilot use. Not ready for public production
+          deployment in the committed local-development configuration."
+```
+
+Every feature branch descended from the `main` that existed when it was cut -
+checked with `git merge-base --is-ancestor`, not taken from the run's own
+report. The two open issues are a missing favicon and some direct unit
+assertions; both were left open with a reason rather than quietly closed, and
+issues #7 and #8 were raised by the testing phase and then fixed and merged.
+
+Three of the four sessions ended for reasons outside the workflow: a wall-clock
+timeout I set too short, an upstream "Selected model is at capacity", and a
+harness fault of my own. In each case the next session read `run-state.json`,
+resumed at the exact issue and review round, and did not redo a finished phase.
+That is the property worth having from a multi-hour autonomous run - not that
+one process reaches the end, but that losing one costs only the work in flight.
+
 ## Cost
 
 Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT
