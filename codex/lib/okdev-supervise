@@ -76,13 +76,22 @@ print("%s|%s|%s" % (d.get("phase"), len(d.get("phases_done") or []), loops))
 PY
 }
 
+# The status of *this* workflow. A terminal state belonging to a different
+# workflow is not ours: a repo where kickoff finished last week is exactly
+# where bugfix starts today, and treating that "complete" as our own means
+# exiting after zero sessions having done nothing at all.
 workflow_status() {
-    python3 - "$STATE" <<'PY' 2>/dev/null || echo "absent"
-import json, sys
+    SKILL="$SKILL" python3 - "$STATE" <<'PY' 2>/dev/null || echo "absent"
+import json, os, sys
 try:
-    print(json.load(open(sys.argv[1])).get("status", "unknown"))
+    d = json.load(open(sys.argv[1]))
 except Exception:
-    print("absent")
+    print("absent"); raise SystemExit
+status = d.get("status", "unknown")
+if d.get("workflow") != os.environ.get("SKILL") and status in ("complete", "blocked"):
+    print("running")          # someone else's finished run; ours has not begun
+else:
+    print(status)
 PY
 }
 

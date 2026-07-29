@@ -65,6 +65,27 @@ python3 "$STATE" --root "$T" loop-bump review:mr-1 --limit 3 >/dev/null 2>&1
 [ $? -eq 0 ] && ok "loop-reset restores the budget" || fail "loop-reset did not restore the budget"
 rm -rf "$T"
 
+# The supervisor makes the same judgement independently, and got it wrong once:
+# it read a previous workflow's "complete" as its own and exited having run
+# nothing. Terminal states belong to a named workflow, not to the repo.
+echo "supervisor workflow identity"
+SUP="$REPO_DIR/codex/lib/okdev-supervise"
+T=$(mktemp -d); mkdir -p "$T/bin" "$T/proj/.okdev"
+mkstate "$T/proj" kickoff complete
+printf '%s\n' '#!/usr/bin/env bash' 'cat >/dev/null' 'exit 0' > "$T/bin/codex"
+chmod +x "$T/bin/codex"
+out=$(PATH="$T/bin:$PATH" bash "$SUP" --skill bugfix --project "$T/proj" \
+        --max-sessions 2 --session-timeout 5 --stall-limit 2 2>&1)
+echo "$out" | grep -q "session 1/" \
+    && ok "a completed kickoff does not stop a bugfix supervisor" \
+    || fail "the supervisor exited without running a session"
+out=$(PATH="$T/bin:$PATH" bash "$SUP" --skill kickoff --project "$T/proj" \
+        --max-sessions 2 --session-timeout 5 2>&1)
+echo "$out" | grep -q "complete after 0 session" \
+    && ok "its own completed workflow still stops it" \
+    || fail "the supervisor re-ran an already complete workflow"
+rm -rf "$T"
+
 echo
 if [ "$FAILURES" -eq 0 ]; then
     echo "okdev-state smoke test: all checks passed"
