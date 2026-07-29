@@ -85,6 +85,18 @@ done
 # Refuse to spend budget we do not have. This is the only gate that matters.
 bash "$REPO_DIR/tests/codex-harness/budget.sh" check
 
+# A container that cannot resolve hostnames does not fail loudly - Codex retries
+# the websocket, the run stalls, and it reads like a hung agent. Seen for real
+# when Tailscale rewrote the host resolver to an address the docker bridge
+# cannot reach. Find out in two seconds instead of two hours.
+if ! docker run --rm "$IMAGE" getent hosts chatgpt.com >/dev/null 2>&1; then
+    echo "run-codex: DNS is broken inside $IMAGE - a run would stall, not fail." >&2
+    echo "  The host resolver in /etc/resolv.conf may be unreachable from the" >&2
+    echo "  docker bridge (Tailscale MagicDNS at 100.100.100.100 does this)." >&2
+    echo "  Fix the host resolver, or pass a reachable one, before running." >&2
+    exit 2
+fi
+
 RUN_DIR="$LAB/runs/$RUN_ID"
 if [ -e "$RUN_DIR" ]; then
     echo "run-codex: run id '$RUN_ID' already exists at $RUN_DIR" >&2
