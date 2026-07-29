@@ -532,6 +532,66 @@ Two of those four are security-adjacent. A run that finishes and says "not
 ready, here is why, here are the tickets" is worth more than one that finishes
 and says nothing.
 
+
+## The self-hosted loop: a defect the system found in its own work
+
+Nothing in this chain was planted.
+
+`kickoff` built LabSlots, merged five issues, and reported **NOT READY**,
+filing four defects its own testing phase had found. One of them:
+
+```
+#6 Production 404 route exposes Django DEBUG page
+   Reproduce: sign in as a student, visit a missing entry URL,
+   observe the raw Django DEBUG page. Evidence: 3 screenshots.
+```
+
+`$bugfix` then took issue #6 and went after the cause rather than the symptom -
+`DEBUG` enabled in the documented Compose default, not a missing 404 template:
+
+```
+compose.yaml, .env.example            the actual fix
+README.md                             documents it
+tests/test_compose_debug_defaults.sh  new, pins the compose default
+tests/integration/test_booking_views.py
+tests/e2e/critical-flows.spec.js
+```
+
+The review is the strongest single artifact of the campaign. It ran the new
+regression test **against the base commit** to prove it fails without the fix:
+
+> `./tests/test_compose_debug_defaults.sh` passed on this head and failed
+> against base `2c62ed5` with the expected default-`1` assertion, confirming
+> regression value.
+
+That is the check that separates a regression test from a decoration, and it is
+the same trap this project fell into earlier with a pipefail assertion that
+scored a run green while the suite was not running at all. It also verified live
+Compose resolution both ways, confirmed the branded 404 and static assets, ran
+26 integration tests and a 94-test suite, pinned the head SHA, and reported no
+findings rather than inventing some. MR !6 merged, issue #6 closed.
+
+## Two bugs in the second week of use
+
+Both were found by asking what a teammate hits after the first workflow ends,
+and both were silent failures that look like success.
+
+**A finished workflow blocked the next one.** With a completed kickoff on disk,
+`okdev-state init --workflow bugfix` returned the old state and exited 0. The
+bugfix run never began. A project outlives any one workflow, so `init` now
+starts a new run when the recorded one reached a terminal state and the workflow
+differs, archiving the finished record under `.okdev/history/`.
+
+**Then the supervisor made the same mistake.** Having fixed the state helper, a
+real bugfix run still ended with `workflow complete after 0 session(s)` -
+because the supervisor judges terminal state independently and read the previous
+kickoff's `complete` as its own. The invariant that a terminal state belongs to
+a *named workflow* rather than to the repository had to be enforced in two
+places, and only one had occurred to me.
+
+`tests/okdev-state-smoke.sh` covers both directions for both components and was
+verified to fail against the unfixed code.
+
 ## Cost
 
 Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT
