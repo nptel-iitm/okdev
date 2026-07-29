@@ -66,12 +66,39 @@ def require(state: dict) -> dict:
     return state
 
 
+def archive_previous(root: Path, state: dict) -> None:
+    """Keep the finished run's record instead of overwriting it.
+
+    A project accumulates workflows over its life, and the last one's phases,
+    loop budgets and blocker are evidence worth keeping.
+    """
+    history = root / ".okdev" / "history"
+    history.mkdir(parents=True, exist_ok=True)
+    stamp = state.get("updated_at", "").replace(":", "").replace("-", "") or "previous"
+    name = "%s-%s.json" % (state.get("workflow", "run"), stamp)
+    (history / name).write_text(json.dumps(state, indent=2))
+    print("archived previous %s run (%s) to .okdev/history/%s"
+          % (state.get("workflow"), state.get("status"), name), file=sys.stderr)
+
+
 def cmd_init(root: Path, args) -> int:
     existing = load(root)
     if existing and not args.force:
-        # Re-entering an existing run is the normal case after a compaction.
-        print(json.dumps(existing, indent=2))
-        return 0
+        # Re-entering a run that is still going is the normal case after a
+        # compaction: return what is already there and change nothing.
+        #
+        # A run that already reached a terminal state is different. The project
+        # outlives the workflow - a repo where kickoff finished last week is
+        # exactly where bugfix starts today - so a finished run must not stop
+        # the next one. Returning the old state there is silent failure: the
+        # new workflow never starts, and a supervisor reading `complete` exits
+        # immediately having done nothing.
+        finished = existing.get("status") in ("complete", "blocked")
+        same_workflow = existing.get("workflow") == args.workflow
+        if not finished or same_workflow:
+            print(json.dumps(existing, indent=2))
+            return 0
+        archive_previous(root, existing)
     save(root, {
         "schema": SCHEMA,
         "workflow": args.workflow,
