@@ -39,6 +39,9 @@
 #                      own stack publishes.
 #   --no-network       cut the container off from the network (default: on;
 #                      Codex needs it to reach the API at all)
+#   --supervise <skill> run okdev-supervise inside the container instead of a
+#                      single `codex exec`, so the workflow restarts itself
+#                      across sessions the way a real install does
 #
 # Writes to $OKDEV_LAB/runs/<run-id>/:
 #   events.jsonl   raw codex event stream
@@ -53,7 +56,7 @@ IMAGE="${OKDEV_CODEX_IMAGE:-okdev-codex-test:0.145.0}"
 
 RUN_ID=""; PROMPT_FILE=""; FIXTURE=""
 SKILLS="$REPO_DIR/codex/skills"
-MODEL="gpt-5.6-terra"; EFFORT="medium"; TIMEOUT=900; NETWORK="bridge"; RUNTIME="codex"; COMPACT_AT=""; REUSE_WORK=""; GITLAB=0; DOCKER_SOCK=0
+MODEL="gpt-5.6-terra"; EFFORT="medium"; TIMEOUT=900; NETWORK="bridge"; RUNTIME="codex"; COMPACT_AT=""; REUSE_WORK=""; GITLAB=0; DOCKER_SOCK=0; SUPERVISE=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -71,6 +74,7 @@ while [ $# -gt 0 ]; do
         --gitlab)      GITLAB=1; shift ;;
         --docker)      DOCKER_SOCK=1; shift ;;
         --no-network)  NETWORK="none"; shift ;;
+        --supervise)   SUPERVISE="$2"; shift 2 ;;
         *) echo "run-codex: unknown option $1" >&2; exit 2 ;;
     esac
 done
@@ -139,6 +143,8 @@ case "$RUNTIME" in
         mkdir -p "$RUN_DIR/work/.okdev/bin"
         cp "$REPO_DIR/codex/lib/okdev-state" "$RUN_DIR/work/.okdev/bin/okdev-state"
         chmod +x "$RUN_DIR/work/.okdev/bin/okdev-state"
+        cp "$REPO_DIR/codex/lib/okdev-supervise" "$RUN_DIR/work/.okdev/bin/okdev-supervise"
+        chmod +x "$RUN_DIR/work/.okdev/bin/okdev-supervise"
         [ -f "$RUN_DIR/work/AGENTS.md" ] || cp "$REPO_DIR/codex/AGENTS.md" "$RUN_DIR/work/AGENTS.md"
         ;;
     claude)
@@ -228,6 +234,22 @@ setsid bash -c '
     > "$RUN_DIR/watchdog.log" 2>&1 < /dev/null &
 WATCHDOG_PID=$!
 
+# Either one Codex session, or the supervisor driving as many as the workflow
+# needs. The supervisor is what a real install uses when a run stops early.
+if [ -n "$SUPERVISE" ]; then
+    cp "$RUN_DIR/prompt.txt" "$RUN_DIR/work/.okdev/first-prompt.txt"
+    AGENT_CMD=(bash "$WORK_PATH/.okdev/bin/okdev-supervise"
+        --skill "$SUPERVISE" --project "$WORK_PATH"
+        --prompt "$WORK_PATH/.okdev/first-prompt.txt"
+        --model "$MODEL" --effort "$EFFORT"
+        --session-timeout "${OKDEV_SESSION_TIMEOUT:-5400}"
+        --max-sessions "${OKDEV_MAX_SESSIONS:-10}")
+else
+    AGENT_CMD=(codex exec --json -m "$MODEL" -c model_reasoning_effort="$EFFORT"
+        -s workspace-write --dangerously-bypass-approvals-and-sandbox
+        -C "$WORK_PATH" --output-last-message "$WORK_PATH/.okdev-last-message" -)
+fi
+
 timeout "$TIMEOUT" docker run --rm -i \
     --name "$CONTAINER_NAME" \
     --user "$(id -u):$(id -g)" \
@@ -240,14 +262,8 @@ timeout "$TIMEOUT" docker run --rm -i \
     -e HOME=/agenthome \
     -e "OKDEV_WORKSPACE=$WORK_PATH" \
     "$IMAGE" \
-    codex exec --json \
-        -m "$MODEL" \
-        -c model_reasoning_effort="$EFFORT" \
-        -s workspace-write \
-        --dangerously-bypass-approvals-and-sandbox \
-        -C "$WORK_PATH" \
-        --output-last-message "$WORK_PATH/.okdev-last-message" \
-        - < "$RUN_DIR/prompt.txt" \
+    "${AGENT_CMD[@]}" \
+        < "$RUN_DIR/prompt.txt" \
     > "$RUN_DIR/events.jsonl" 2> "$RUN_DIR/stderr.log"
 EXIT_CODE=$?
 set -e
