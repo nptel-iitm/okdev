@@ -483,6 +483,55 @@ resumed at the exact issue and review round, and did not redo a finished phase.
 That is the property worth having from a multi-hour autonomous run - not that
 one process reaches the end, but that losing one costs only the work in flight.
 
+
+## Unattended: the supervisor on the complex brief
+
+The brief that produced eight issues, zero merges and 19 points of the weekly
+window was re-run against the hardened tree, with `okdev-supervise` driving it
+from inside the container - the same path a real install uses.
+
+```
+12:27  session 1 ... 13:27  ended (exit 124)   timeout
+13:27  session 2 ... 14:27  ended (exit 124)   timeout
+14:27  session 3 ... 15:27  ended (exit 124)   timeout
+15:27  session 4 ... 16:27  ended (exit 124)   timeout
+16:27  session 5 ... 16:47  ended (exit 0)
+16:47  workflow complete after 5 session(s)
+```
+
+Four consecutive one-hour timeouts, each resumed within a second, carrying the
+exact phase and review-loop round across every boundary. No human touched it.
+
+```
+                     e2e-02 (before)      e2e-11 (supervised)
+issues                 8, filed upfront     5, one at a time
+merged                 0 of 8               5 of 5
+artifacts              2094 lines           417 lines
+cost                   19 points            4 points
+sessions               1, died at 46 min    5, all resumed automatically
+terminal state         never reached        complete
+```
+
+`review:mr-4` is the interesting one: CHANGES REQUESTED with two MUST FIX
+findings, a fix pushed, then APPROVED on round **3 of 3** - converging exactly
+at its budget rather than overrunning it. The round-3 reviewer verified both
+prior findings at `apps/bookings/views.py:103`, ran the full PostgreSQL suite,
+pinned the head SHA, and reported no new findings rather than inventing some.
+
+The delivery report says **"NOT READY - delivered for evaluation with known
+issues"** and files what it found instead of glossing:
+
+```
+#6 Production 404 route exposes Django DEBUG page      security
+#7 Technician new-session form overflows on mobile
+#8 Admin utilisation results table overflows at 360px
+#9 Promotion notification exposes raw session UUID     information disclosure
+```
+
+Two of those four are security-adjacent. A run that finishes and says "not
+ready, here is why, here are the tickets" is worth more than one that finishes
+and says nothing.
+
 ## Cost
 
 Around two dozen Codex runs, roughly 7M input tokens, moved the weekly ChatGPT
