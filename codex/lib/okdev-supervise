@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+# Drive an OKDev workflow to a terminal state, across as many Codex sessions as
+# it takes.
+#
+#   okdev-supervise --skill kickoff --project /path/to/repo [options]
+#
+# A single `codex exec` session ends for many reasons that have nothing to do
+# with the work: a wall-clock limit, an upstream "model is at capacity", a
+# dropped connection, or simply the model finishing its turn while the workflow
+# still has phases left. In a four-session build of one small product, all four
+# happened, each once.
+#
+# None of those mean the workflow failed. The run state on disk says whether it
+# did. So this loop asks `.okdev/run-state.json`, not the exit code, and starts
+# another session when the answer is "still running".
+#
+# It stops when the workflow reaches a terminal state of its own - complete or
+# blocked - or when it hits a limit you set. It will not loop forever, and it
+# will not keep paying for a workflow that is making no progress.
+#
+# Options:
+#   --skill <name>       workflow to run (default: kickoff)
+#   --project <dir>      the working directory (required)
+#   --prompt <file>      first-session prompt; later sessions get a resume prompt
+#   --max-sessions <n>   hard ceiling on sessions (default 12)
+#   --session-timeout <s> per-session wall clock (default 5400)
+#   --budget-delta <n>   stop after spending n percentage points (default 10).
+#                        Needs OKDEV_BUDGET_CMD set to a command printing the
+#                        percentage of your quota used so far; without it this
+#                        check is skipped and --max-sessions is the only ceiling.
+#   --model / --effort   passed through to codex
+#   --stall-limit <n>    give up after n sessions with no forward progress
+#                        (default 2). Progress means the phase changed, a phase
+#                        finished, or a loop round advanced.
+
+SKILL="kickoff"; PROJECT=""; PROMPT=""; MAX_SESSIONS=12; SESSION_TIMEOUT=5400
+BUDGET_DELTA=10; MODEL="gpt-5.6-sol"; EFFORT="medium"; STALL_LIMIT=2
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --skill)           SKILL="$2"; shift 2 ;;
+        --project)         PROJECT="$2"; shift 2 ;;
+        --prompt)          PROMPT="$2"; shift 2 ;;
+        --max-sessions)    MAX_SESSIONS="$2"; shift 2 ;;
+        --session-timeout) SESSION_TIMEOUT="$2"; shift 2 ;;
+        --budget-delta)    BUDGET_DELTA="$2"; shift 2 ;;
+        --model)           MODEL="$2"; shift 2 ;;
+        --effort)          EFFORT="$2"; shift 2 ;;
+        --stall-limit)     STALL_LIMIT="$2"; shift 2 ;;
+        *) echo "okdev-supervise: unknown option $1" >&2; exit 2 ;;
+    esac
+done
+
+[ -n "$PROJECT" ] || { echo "okdev-supervise: --project is required" >&2; exit 2; }
+cd "$PROJECT" || exit 2
+
+STATE=".okdev/run-state.json"
+LOG=".okdev/supervisor.log"
+mkdir -p .okdev
+
+# The fingerprint of forward progress: which phase, how many are finished, and
+# where every review loop has got to. If this is unchanged after a whole
+# session, that session achieved nothing and another one probably will not
+# either.
+progress_fingerprint() {
+    python3 - "$STATE" <<'PY' 2>/dev/null || echo "none"
+import json, sys
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    print("none"); raise SystemExit
+loops = sorted((k, v.get("rounds")) for k, v in (d.get("loops") or {}).items())
+print("%s|%s|%s" % (d.get("phase"), len(d.get("phases_done") or []), loops))
+PY
+}
+
+workflow_status() {
+    python3 - "$STATE" <<'PY' 2>/dev/null || echo "absent"
+import json, sys
+try:
+    print(json.load(open(sys.argv[1])).get("status", "unknown"))
+except Exception:
+    print("absent")
+PY
+}
+
+say() { printf '%s %s\n' "$(date +%H:%M:%S)" "$1" | tee -a "$LOG"; }
+
+# Quota metering is deployment-specific, so it is injected rather than assumed.
+budget_used() {
+    [ -n "${OKDEV_BUDGET_CMD:-}" ] || { echo "-1"; return; }
+    local v; v="$(eval "$OKDEV_BUDGET_CMD" 2>/dev/null || echo -1)"
+    case "$v" in ''|*[!0-9]*) echo "-1" ;; *) echo "$v" ;; esac
+}
+
+START_BUDGET="$(budget_used)"
+
+say "supervising \$$SKILL in $PROJECT (max $MAX_SESSIONS sessions, budget delta $BUDGET_DELTA)"
+
+stalls=0
+prev_fingerprint=""
+
+for session in $(seq 1 "$MAX_SESSIONS"); do
+    status="$(workflow_status)"
+    case "$status" in
+        complete) say "workflow complete after $((session - 1)) session(s)"; exit 0 ;;
+        blocked)  say "workflow blocked - a human decision is needed; see .okdev/blocked.md"; exit 4 ;;
+    esac
+
+    spent=0
+    if [ "$START_BUDGET" -ge 0 ]; then
+        used="$(budget_used)"
+        [ "$used" -lt 0 ] && used="$START_BUDGET"
+        # A quota window can roll over mid-run and reset the reading to zero;
+        # treat that as "spent everything so far" rather than as free credit.
+        if [ "$used" -ge "$START_BUDGET" ]; then spent=$((used - START_BUDGET)); else spent="$used"; fi
+        if [ "$spent" -ge "$BUDGET_DELTA" ]; then
+            say "stopping: spent $spent points of a $BUDGET_DELTA budget, workflow still '$status'"
+            exit 5
+        fi
+    fi
+
+    if [ "$session" -eq 1 ] && [ -n "$PROMPT" ]; then
+        body="$(cat "$PROMPT")"
+    else
+        body="\$$SKILL
+
+Continue this run. A previous session ended before the workflow finished;
+.okdev/run-state.json records what is already done. Do not redo a phase it
+lists as finished and do not re-file issues that already exist. Carry on from
+the current phase and drive the workflow to its own terminal state."
+    fi
+
+    say "session $session/$MAX_SESSIONS (phase: $(progress_fingerprint), spent: ${spent}pt)"
+    timeout "$SESSION_TIMEOUT" codex exec --json \
+        -m "$MODEL" -c model_reasoning_effort="$EFFORT" \
+        -s workspace-write --dangerously-bypass-approvals-and-sandbox \
+        -C "$PROJECT" - <<<"$body" >> "$LOG.events" 2>> "$LOG.stderr"
+    rc=$?
+    say "session $session ended (exit $rc)"
+
+    fingerprint="$(progress_fingerprint)"
+    if [ "$fingerprint" = "$prev_fingerprint" ]; then
+        stalls=$((stalls + 1))
+        say "no forward progress this session ($stalls/$STALL_LIMIT)"
+        if [ "$stalls" -ge "$STALL_LIMIT" ]; then
+            say "stopping: $STALL_LIMIT sessions without progress. Something needs a human."
+            exit 6
+        fi
+    else
+        stalls=0
+    fi
+    prev_fingerprint="$fingerprint"
+done
+
+say "stopping: reached the $MAX_SESSIONS session ceiling, workflow still '$(workflow_status)'"
+exit 7

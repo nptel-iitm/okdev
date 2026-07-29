@@ -123,9 +123,12 @@ install_codex() {
     # The durable state helper every Codex skill calls. Without it the skills
     # have nowhere to keep a loop counter that survives a compaction.
     echo "  Run-state helper -> $TARGET_DIR/.okdev/bin/okdev-state"
+    echo "  Supervisor       -> $TARGET_DIR/.okdev/bin/okdev-supervise"
     mkdir -p "$TARGET_DIR/.okdev/bin"
     cp "$ECOSYSTEM_DIR/codex/lib/okdev-state" "$TARGET_DIR/.okdev/bin/okdev-state"
     chmod +x "$TARGET_DIR/.okdev/bin/okdev-state"
+    cp "$ECOSYSTEM_DIR/codex/lib/okdev-supervise" "$TARGET_DIR/.okdev/bin/okdev-supervise"
+    chmod +x "$TARGET_DIR/.okdev/bin/okdev-supervise"
 
     if [ -f "$TARGET_DIR/AGENTS.md" ] && ! grep -q "Over Kill Dev" "$TARGET_DIR/AGENTS.md"; then
         echo "  Appending OKDev rules to the existing AGENTS.md"
@@ -177,6 +180,8 @@ if [ "$HARNESS" = "codex" ] || [ "$HARNESS" = "both" ]; then
     echo "  skills: $CODEX_SKILLS_DIR"
     echo "  rules:  $TARGET_DIR/AGENTS.md"
     echo "  state:  $TARGET_DIR/.okdev/bin/okdev-state  (run 'okdev-state next' to see where a run stands)"
+    echo "  resume: a stopped run continues by invoking the same skill again in this directory."
+    echo "          .okdev/bin/okdev-supervise --skill kickoff --project \"$TARGET_DIR\" retries for you."
     echo "  start:  cd $TARGET_DIR && codex, then \$kickoff"
     echo "  note:   restart Codex if it was already running, so it picks up the skills."
     echo

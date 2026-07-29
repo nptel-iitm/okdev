@@ -101,6 +101,53 @@ The bootstrap is not fully containerized. `scripts/setup-all.sh` currently uses 
 
 Restart an already-running Codex session after installation so it discovers the installed skills.
 
+## When a Codex run stops before it finishes
+
+It will, and that is expected rather than a failure. A long workflow spans
+several Codex sessions, and a session ends for reasons that have nothing to do
+with your project: a wall-clock limit, an upstream *"Selected model is at
+capacity"*, a dropped connection, or the model simply finishing its turn while
+the workflow still has phases left. Building one small product took four
+sessions, and each of those four things happened exactly once.
+
+**What to do: run the same command again in the same directory.**
+
+```bash
+cd /absolute/path/to/project
+codex
+# Invoke $kickoff again
+```
+
+The workflow reads `.okdev/run-state.json`, sees which phases are finished and
+how many review rounds each merge request has already had, and carries on from
+there. It will not redo requirements, re-file issues, or restart a review loop
+at zero. Check where it got to at any time with:
+
+```bash
+.okdev/bin/okdev-state next
+```
+
+To let it retry by itself, hand it to the supervisor, which keeps starting
+sessions until the workflow reaches its own terminal state:
+
+```bash
+.okdev/bin/okdev-supervise --skill kickoff --project "$PWD"
+```
+
+It stops on its own when the workflow is **complete**, when the workflow
+**blocks** on something only you can decide (read `.okdev/blocked.md`), after
+two sessions with no forward progress, or at limits you set with
+`--max-sessions` and `--budget-delta`. It will not loop forever and it will not
+keep paying for a workflow that has stopped moving.
+
+Two states mean *stop and read*, not *run it again*:
+
+- `.okdev/blocked.md` exists — the run needs a decision or an unreachable
+  service. The file says what finished, what it was waiting on, and how to
+  resume once you have fixed it.
+- The supervisor reports no forward progress. Something is wrong that another
+  session will not fix.
+
 ## What installation changes
 
 `scripts/install-to-project.sh`:

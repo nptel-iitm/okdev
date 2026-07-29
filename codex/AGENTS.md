@@ -65,6 +65,23 @@ a skill file.
 - If a service you need is unreachable, `block` with the specific endpoint and
   error. Do not substitute a weaker mechanism for a missing one.
 
+## Shell commands the sandbox refuses
+
+`rm -f` is rejected outright — the whole command fails, not just that clause:
+
+```
+rejected: rm -f style commands are not permitted. Use a safer approach
+```
+
+This bites the usual way of posting a long GitLab description: write it to a
+`mktemp` file, `curl --data-urlencode description@$file`, then delete the file.
+Drop the deletion — a temp file costs nothing and the workspace is disposable.
+Better still, avoid the temp file: pass the body on stdin with
+`--data-urlencode description@-`, or use `glab` where it is available.
+
+The general rule: when a command is rejected, do not retry it with quoting
+tricks. Find the approach that does not need the rejected verb.
+
 ## Engineering rules
 
 These are the real invariants. Everything else is judgment.
