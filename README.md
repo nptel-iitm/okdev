@@ -101,6 +101,145 @@ The bootstrap is not fully containerized. `scripts/setup-all.sh` currently uses 
 
 Restart an already-running Codex session after installation so it discovers the installed skills.
 
+## Running a workflow under Codex
+
+Interactive Codex and `codex exec` behave differently in one way that matters:
+interactive has no session limit and no retry, so **you** notice when a run
+stops and invoke the skill again. `okdev-supervise` wraps `codex exec` and does
+that for you, which is what you want for anything you are not sitting in front
+of. Neither Codex mode has a timeout of its own; `--session-timeout` below is
+the supervisor's, applied with `timeout(1)`.
+
+### Check the environment first
+
+The `environment` phase blocks on any of these, so it is quicker to check
+yourself:
+
+```bash
+docker info >/dev/null && echo "docker ok"
+curl -fsS -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  http://gitlab.local:8929/api/v4/version >/dev/null && echo "gitlab ok"
+npx playwright --version
+cat .mcp.json     # GitLab URL and the token env var
+```
+
+### Starting a new project
+
+The brief is the highest-leverage thing you write. Say who uses it, the rules
+that actually matter, what you do not need, and the scale — a page is plenty.
+
+```bash
+cat > BRIEF.md <<'EOF'
+# ShiftSwap - nurses swap shifts without ringing the ward manager
+...
+EOF
+```
+
+Then a prompt naming your environment, because the run cannot guess it:
+
+```bash
+mkdir -p .okdev
+cat > .okdev/prompt.txt <<'EOF'
+$kickoff
+
+Build the project described in BRIEF.md.
+
+Environment:
+- GitLab at http://gitlab.local:8929, token in the GITLAB_TOKEN environment
+  variable (send it as the PRIVATE-TOKEN header). The project okdev/shiftswap
+  exists and is empty. `git push origin` already has credentials.
+- Docker is available. Bind published ports in the 18100-18199 range.
+- Playwright and its browsers are installed and PLAYWRIGHT_BROWSERS_PATH is
+  set. Run headless.
+- Sub-agents are available. Delegate as your instructions describe.
+
+Report what you built, what merged, what is open, and your readiness verdict.
+EOF
+```
+
+Run it:
+
+```bash
+.okdev/bin/okdev-supervise \
+  --skill kickoff --project "$PWD" \
+  --prompt .okdev/prompt.txt \
+  --session-timeout 10800 \
+  --max-sessions 8
+```
+
+**Pass `--prompt` on a first run.** Without it the supervisor sends its resume
+text, which tells the agent to continue work that does not exist yet. Later
+sessions get the resume text automatically; that is the point of the flag.
+
+### Fixing a bug
+
+File the issue in GitLab, then point a workflow at it. Same shape for
+`replicate-issue`, which investigates and never fixes, and
+`replicate-and-kickoff`, which does both in one pass.
+
+```bash
+cat > .okdev/prompt.txt <<'EOF'
+$bugfix
+
+Fix issue #14 of okdev/shiftswap:
+http://gitlab.local:8929/okdev/shiftswap/-/issues/14
+
+[the same Environment block as above]
+
+Take it through to a merged MR with a regression test, and report what merged.
+EOF
+
+.okdev/bin/okdev-supervise --skill bugfix --project "$PWD" --prompt .okdev/prompt.txt
+```
+
+A finished workflow does not block the next one: starting `bugfix` in a repo
+where `kickoff` completed archives the old record under `.okdev/history/` and
+begins a new run.
+
+### Watching it
+
+```bash
+.okdev/bin/okdev-state next        # phase, what is finished, open loop budgets
+tail -f .okdev/supervisor.log      # one line per session
+```
+
+What the supervisor's exit code means:
+
+```
+0  complete           the workflow finished
+4  blocked            read .okdev/blocked.md - it needs a decision from you
+5  budget spent       raise --budget-delta, or stop
+6  no progress twice   another session will not fix this; look at it
+7  session ceiling    raise --max-sessions
+```
+
+`4` and `6` mean stop and read. `0`, `5` and `7` are just limits being hit.
+
+### Keeping it inside a quota
+
+Metering is deployment-specific, so the supervisor takes a command rather than
+assuming one:
+
+```bash
+export OKDEV_BUDGET_CMD='your-command-that-prints-percent-used'
+.okdev/bin/okdev-supervise ... --budget-delta 5
+```
+
+Without `OKDEV_BUDGET_CMD` that check is skipped and `--max-sessions` is the
+only ceiling. For scale: building a two-page brief into a tested, reviewed,
+merged product cost about 4% of a weekly ChatGPT Pro window.
+
+### Two traps worth knowing
+
+**Container DNS.** If you run Codex inside Docker on a machine using Tailscale
+MagicDNS, containers cannot reach the resolver and every run *stalls* rather
+than failing — it reads like a hung agent. `tailscale set --accept-dns=false`,
+or give the agent container `--network host`.
+
+**`rm -f` is rejected** by Codex's command layer, and it fails the whole
+compound command, not just that clause. When a command is rejected, change the
+approach rather than retrying with different quoting.
+
 ## When a Codex run stops before it finishes
 
 It will, and that is expected rather than a failure. A long workflow spans
@@ -243,6 +382,10 @@ find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -n1 bash -n
 
 # Exercise the target installer with isolated HOME and CODEX_HOME directories.
 bash tests/install-to-project-smoke.sh
+
+# Durable run state and the supervisor: starting a second workflow, loop
+# budgets, and the terminal states that stop a supervisor.
+bash tests/okdev-state-smoke.sh
 
 # Structural checks on the Codex skill tree. Both are free - no model calls.
 python3 tests/codex-harness/lint-skills.py codex/skills
