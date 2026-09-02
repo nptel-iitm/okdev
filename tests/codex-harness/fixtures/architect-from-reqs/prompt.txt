@@ -1,0 +1,1 @@
+Use the architect-agent skill against this project. The requirements are in .okdev/requirements.md.

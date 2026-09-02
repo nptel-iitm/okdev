@@ -1,0 +1,14 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1500,
+  "files_exist": [".okdev/ui-design.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/ui-design.md", "pattern": "(?i)375"},
+    {"path": ".okdev/ui-design.md", "pattern": "(?i)(contrast|wcag|4\\.5)"},
+    {"path": ".okdev/ui-design.md", "pattern": "(?i)(token|palette|spacing)"}
+  ],
+  "commands": [
+    {"cmd": "git diff --quiet HEAD -- public/", "expect_exit": 0}
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1800,
+  "run_state": {
+    "status": "complete"
+  },
+  "commands": [
+    {
+      "cmd": "docker run --rm -v \"$PWD\":/srv -w /srv --user $(id -u):$(id -u) okdev-codex-test:0.145.0 python3 -m pytest -q",
+      "expect_exit": 0,
+      "timeout": 300
+    },
+    {
+      "cmd": "git log --oneline -3 > /tmp/okdev-log.txt && grep -qi title /tmp/okdev-log.txt",
+      "expect_exit": 0
+    }
+  ],
+  "files_exist": [
+    "tests/test_server.py"
+  ]
+}

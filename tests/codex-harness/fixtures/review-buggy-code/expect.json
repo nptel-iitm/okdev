@@ -1,0 +1,11 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 900,
+  "files_exist": ["review-verdict.md", ".okdev/run-state.json"],
+  "files_match": [
+    {"path": "review-verdict.md", "pattern": "Status:\\s*\\*{0,2}CHANGES REQUESTED"},
+    {"path": "review-verdict.md", "pattern": "(?i)(sql injection|parameteri|injection)"},
+    {"path": "review-verdict.md", "pattern": "MUST FIX"}
+  ],
+  "run_state": {"status": "complete"}
+}

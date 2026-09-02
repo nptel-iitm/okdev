@@ -1,0 +1,15 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1500,
+  "files_exist": [".okdev/test-results/ui-scores.md", ".okdev/run-state.json"],
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/test-results/ui-scores.md", "pattern": "(?i)(mobile|375)"},
+    {"path": ".okdev/test-results/ui-scores.md", "pattern": "(?i)(contrast|responsive|overlap|overflow)"},
+    {"path": ".okdev/test-results/ui-scores.md", "pattern": "(?i)fail"}
+  ],
+  "commands": [
+    {"cmd": "ls .okdev/test-results/screenshots/ui/*.png | head -1", "expect_exit": 0}
+  ]
+}

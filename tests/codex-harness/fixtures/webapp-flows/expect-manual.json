@@ -1,0 +1,13 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1500,
+  "files_exist": [".okdev/test-results/manual-spot-check.md", ".okdev/run-state.json"],
+  "files_absent": [".okdev/blocked.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/test-results/manual-spot-check.md", "pattern": "M4"},
+    {"path": ".okdev/test-results/manual-spot-check.md", "pattern": "M7"},
+    {"path": ".okdev/test-results/manual-spot-check.md", "pattern": "(?i)fail"},
+    {"path": ".okdev/test-results/manual-spot-check.md", "pattern": "(?i)(ready|readiness)"}
+  ]
+}

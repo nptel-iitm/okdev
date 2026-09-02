@@ -1,0 +1,13 @@
+Use the replicate-multiple-issues skill.
+
+Investigate issues 2 and 3 of okdev/notes-lab.
+
+Environment:
+- GitLab at http://gitlab.local:8929, API token in the GITLAB_TOKEN environment variable (send as the PRIVATE-TOKEN header). Project: okdev/notes-lab.
+- Sub-agents are not available here, so do each investigation yourself, one issue fully finished before starting the next.
+- Docker is not available. Start the app with:
+      PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Playwright and its browsers are installed; PLAYWRIGHT_BROWSERS_PATH is set. Run headless.
+- Accounts: demo@example.com / correct-horse, sam@example.com / hunter2222.
+
+Post your findings to each issue. Do not fix anything.

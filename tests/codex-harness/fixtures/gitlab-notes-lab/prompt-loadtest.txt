@@ -1,0 +1,10 @@
+Use the load-tester skill against this project.
+
+Environment:
+- Start the application yourself with:
+      PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+  It then serves at http://localhost:8080/.
+- Docker IS available here (the socket is mounted), so run k6 from the grafana/k6 image as the skill requires. Note that the k6 container is a sibling of this one, not a child: it does not share this container's network or filesystem. Use `--network host` for it, and mount scripts from a path that exists on the Docker host — write your k6 script under /work, which is bind-mounted, and check `docker inspect` or simply copy the script into the k6 container if the mount does not resolve.
+- The endpoints worth measuring are GET / (the static page) and GET /api/notes (authenticated; obtain a token from POST /api/signin with demo@example.com / correct-horse).
+
+Report the measured numbers against the thresholds.

@@ -1,0 +1,16 @@
+Use the replicate-and-kickoff skill on issue #2 of okdev/notes-lab.
+
+Issue: http://gitlab.local:8929/okdev/notes-lab/-/issues/2
+
+Environment:
+- GitLab at http://gitlab.local:8929, token in the GITLAB_TOKEN environment variable (PRIVATE-TOKEN header). Project okdev/notes-lab. `git push` already has credentials in the origin remote.
+- Sub-agents are not available here, so run both stages yourself.
+- The project already exists on GitLab, so there is no project setup to do.
+- Docker is not available. Run the app with:
+      PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Tests run with `python3 -m pytest`.
+- Playwright and its browsers are installed; PLAYWRIGHT_BROWSERS_PATH is set. Run headless.
+- Accounts: demo@example.com / correct-horse, sam@example.com / hunter2222.
+- For the review stage, review the MR head against the issue's acceptance criteria and act on your own verdict, respecting the loop's round budget.
+
+Report whether it reproduced, the MR number, and whether it merged.

@@ -1,0 +1,11 @@
+Use the kickoff-multi skill on issues 4 and 5 of okdev/notes-lab.
+
+Environment:
+- GitLab at http://gitlab.local:8929, token in the GITLAB_TOKEN environment variable (PRIVATE-TOKEN header). Project okdev/notes-lab. `git push` already has credentials in the origin remote.
+- The project already exists with its board and labels, so there is no project setup or requirements-and-architecture phase to run. For each issue, the lifecycle is: implement on a feature branch, push, open an MR, review it against the issue's acceptance criteria, and merge on an approved verdict.
+- Sub-agents are not available here, so process each issue yourself, one fully finished before the next starts.
+- Docker is not available. Run the app with: PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Tests run with `python3 -m pytest`.
+- Pull the latest main before branching for the second issue, so the two changes do not conflict.
+
+Report the table of outcomes.

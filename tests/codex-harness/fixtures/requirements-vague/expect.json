@@ -1,0 +1,12 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 900,
+  "files_exist": [".okdev/requirements.md", ".okdev/run-state.json"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/requirements.md", "pattern": "(?i)ambiguit"},
+    {"path": ".okdev/requirements.md", "pattern": "(?i)assumption"},
+    {"path": ".okdev/requirements.md", "pattern": "(?i)(swap|approv)"},
+    {"path": ".okdev/requirements.md", "pattern": "(?i)(google|oauth|sso)"}
+  ]
+}

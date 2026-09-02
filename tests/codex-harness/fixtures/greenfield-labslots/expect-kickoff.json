@@ -1,0 +1,23 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 7200,
+  "files_exist": [
+    ".okdev/run-state.json",
+    ".okdev/requirements.md",
+    ".okdev/architecture.md",
+    ".okdev/orchestrator-log.md",
+    ".okdev/delivery-report.md",
+    "docker-compose.yml"
+  ],
+  "run_state": {"workflow": "kickoff", "status": "complete"},
+  "files_match": [
+    {"path": ".okdev/requirements.md", "pattern": "(?i)(waitlist|wait list)"},
+    {"path": ".okdev/requirements.md", "pattern": "(?i)overlap"},
+    {"path": ".okdev/architecture.md", "pattern": "(?i)docker[- ]compose"},
+    {"path": ".okdev/delivery-report.md", "pattern": "(?i)(ready|not ready)"}
+  ],
+  "commands": [
+    {"cmd": "docker compose config --quiet", "expect_exit": 0, "timeout": 120},
+    {"cmd": "test -n \"$(git log --oneline -1)\"", "expect_exit": 0}
+  ]
+}

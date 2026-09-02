@@ -1,0 +1,10 @@
+{
+  "must_not_time_out": true,
+  "max_duration_seconds": 1800,
+  "files_exist": [".okdev/test-results/load-tests.md"],
+  "run_state": {"status": "complete"},
+  "files_match": [
+    {"path": ".okdev/test-results/load-tests.md", "pattern": "(?i)(p95|p\\(95\\))"},
+    {"path": ".okdev/test-results/load-tests.md", "pattern": "[0-9]"}
+  ]
+}

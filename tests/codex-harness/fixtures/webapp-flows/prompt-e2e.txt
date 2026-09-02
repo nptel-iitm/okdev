@@ -1,0 +1,9 @@
+Use the e2e-test-runner skill against this project.
+
+Start the application yourself with:
+    python3 -m http.server 8080 --directory public &
+It then serves at http://localhost:8080/. Docker is not available in this environment, so use that command rather than docker compose.
+
+There is no test plan. Derive the critical user flows from README.md, which states the intended behaviour.
+
+Playwright and its browsers are already installed; `npx playwright test` works, and PLAYWRIGHT_BROWSERS_PATH is set. Run headless.

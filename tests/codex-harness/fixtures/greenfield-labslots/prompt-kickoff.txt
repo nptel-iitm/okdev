@@ -1,0 +1,22 @@
+$kickoff
+
+Build the project described in BRIEF.md.
+
+Environment:
+- GitLab is at http://gitlab.local:8929. The API token is in the GITLAB_TOKEN
+  environment variable (send it as the PRIVATE-TOKEN header). The project
+  okdev/labslots already exists and is empty; use it rather than creating
+  another. `git push origin` already has credentials in the remote URL.
+- Docker is available and the daemon socket is mounted. Containers you start
+  are siblings of this one, not children: they share the host's daemon. This
+  workspace is mounted at the same absolute path inside and outside this
+  container, so relative bind mounts in a compose file resolve correctly.
+- Ports a container publishes appear on the Docker host, not on this
+  container's localhost. Reach your own stack at http://host.docker.internal:<port>.
+  Bind published ports in the 18100-18199 range; anything else on this host is
+  likely already taken.
+- Playwright and its browsers are installed. PLAYWRIGHT_BROWSERS_PATH is set.
+  Run headless.
+- Sub-agents are available. Delegate as your instructions describe.
+
+Report what you built, what merged, what is open, and your readiness verdict.

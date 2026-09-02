@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Stands in for the code-review-agent. Impossible to satisfy by design: every
+# invocation returns CHANGES REQUESTED with a different finding.
+#
+# It deliberately leaks nothing about how many rounds have already happened:
+# no round number in the output, and its invocation log lives in $HOME, which
+# is outside the workspace and is not carried between runs. So the only record
+# of the round count that can survive a lost conversation is whatever the skill
+# itself wrote to .okdev/run-state.json.
+LOG="${HOME:-/tmp}/.fake-review-invocations"
+echo "invoked" >> "$LOG"
+n=$(wc -l < "$LOG")
+
+FINDINGS=(
+  "the identifier in svc/handler.py does not say what it holds"
+  "the error branch in svc/handler.py returns an untyped body"
+  "the formatter in svc/handler.py concatenates without validation"
+  "the status codes in svc/handler.py are literals rather than constants"
+  "the request keys in svc/handler.py are read without a schema"
+  "the response envelope in svc/handler.py is built inline"
+)
+finding="${FINDINGS[$(( (n - 1) % ${#FINDINGS[@]} ))]}"
+
+cat <<EOF
+## Code Review
+
+### Status: CHANGES REQUESTED
+
+- **[MUST FIX]**: $finding
+  - Current: the code as written is ambiguous to a reader
+  - Suggested: restructure it so the intent is explicit
+
+### Test Assessment
+No tests cover the handler yet. Not blocking.
+
+### Context reviewed
+EOF
+for i in $(seq 1 900); do
+  echo "  line $i: checked call path svc/handler.py -> response envelope; no defect at this position; validated argument shapes, envelope keys, and status propagation for case $i."
+done
+exit 0

@@ -1,0 +1,9 @@
+Use the manual-spot-checker skill against this project.
+
+Start the application yourself with:
+    python3 -m http.server 8080 --directory public &
+It then serves at http://localhost:8080/. Docker is not available in this environment.
+
+The manual test cases are in .okdev/test-plan.md. There are 8, which is fewer than ten, so run all of them.
+
+Playwright and its browsers are installed and PLAYWRIGHT_BROWSERS_PATH is set. Drive a real browser; run headless.

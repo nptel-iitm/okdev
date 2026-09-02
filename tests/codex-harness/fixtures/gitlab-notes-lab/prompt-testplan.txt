@@ -1,0 +1,10 @@
+Use the test-planner-agent skill against this project.
+
+Environment:
+- Docker is not available and there is no GitLab access for this run, so: do not file GitLab issues; record each failure in the test report instead, and say that is what you did.
+- Run the app with: PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Tests run with `python3 -m pytest`.
+- Playwright and its browsers are installed; PLAYWRIGHT_BROWSERS_PATH is set. Run headless.
+- Sub-agents are not available, so run each test category yourself.
+- Skip the load-test category; it has already been measured separately.
+- The README states the intended behaviour and is the requirements source.

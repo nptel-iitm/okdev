@@ -1,0 +1,8 @@
+Use the delivery-agent skill against this project.
+
+Environment:
+- Docker is not available, so verify the deployment path by following the non-Docker instructions in the README instead, and say in the report which path you actually verified.
+- Run the app with: PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Tests run with `python3 -m pytest`.
+- GitLab is not reachable from this run, so take the open-issue list from what the test report and the repository tell you, and say that is what you did.
+- The README is the requirements source. .okdev/ already contains a test plan and a test report from the testing phase.

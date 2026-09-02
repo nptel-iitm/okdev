@@ -1,0 +1,13 @@
+Use the replicate-issue skill.
+
+Issue to investigate: http://gitlab.local:8929/okdev/notes-lab/-/issues/2
+
+Environment:
+- GitLab API is at http://gitlab.local:8929, and the token is in the GITLAB_TOKEN environment variable. Use it as the PRIVATE-TOKEN header. The project is okdev/notes-lab.
+- Docker is not available. Start the application directly instead:
+      PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+  It then serves at http://localhost:8080/.
+- Playwright and its browsers are installed; PLAYWRIGHT_BROWSERS_PATH is set. Run headless.
+- Accounts: demo@example.com / correct-horse, and sam@example.com / hunter2222.
+
+Save screenshots under test-results/ as the skill specifies, upload them to GitLab, and post your report to the issue. Do not fix anything.

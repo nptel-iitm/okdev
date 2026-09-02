@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Notes</title>
+<link rel="stylesheet" href="style.css">
+<div class="page">
+  <header class="bar">
+    <h1>Notes</h1>
+    <span class="who" id="who"></span>
+    <button id="signout" class="ghost">Sign out</button>
+  </header>
+
+  <section id="signin-view">
+    <h2>Sign in</h2>
+    <form id="signin-form">
+      <label>Email <input id="email" type="email" required></label>
+      <label>Password <input id="password" type="password" required></label>
+      <p class="err" id="signin-err"></p>
+      <button type="submit">Sign in</button>
+    </form>
+    <p class="hint">Use demo@example.com / correct-horse</p>
+  </section>
+
+  <section id="notes-view" hidden>
+    <h2>Your notes</h2>
+    <form id="note-form">
+      <input id="note-title" placeholder="Title">
+      <textarea id="note-body" placeholder="Write something"></textarea>
+      <p class="err" id="note-err"></p>
+      <button type="submit">Add note</button>
+    </form>
+    <ul id="note-list"></ul>
+    <p id="empty-state" class="hint">No notes yet.</p>
+  </section>
+</div>
+<script src="app.js"></script>

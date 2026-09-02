@@ -1,0 +1,1 @@
+Use the requirements-agent skill against this project. The source material is BRIEF.md.

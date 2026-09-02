@@ -1,0 +1,11 @@
+Use the ui-designer-agent skill against this project.
+
+You are designing the fix for issue #3: the layout is unusable on phone widths. The page has a fixed 900px container, the signed-in identity is absolutely positioned and collides with the heading, and the hint text is nearly unreadable at #dcdcd6 on #fbfbf8.
+
+Environment:
+- Docker is not available. Run the app with: PORT=8080 NOTES_DB=/tmp/notes.db python3 -m app.server &
+- Playwright and its browsers are installed; PLAYWRIGHT_BROWSERS_PATH is set. Run headless if you want to look at the current pages.
+- GitLab is not reachable from this run.
+- The pages are the sign-in screen and the notes screen. public/style.css holds the current design.
+
+Produce the design specification. Do not implement it.

@@ -1,0 +1,28 @@
+$replicate-issue
+
+Investigate issue #10 of okdev/labslots:
+http://gitlab.local:8929/okdev/labslots/-/issues/10
+
+Environment:
+- GitLab is at http://gitlab.local:8929. The API token is in the GITLAB_TOKEN
+  environment variable (send it as the PRIVATE-TOKEN header). `git push origin`
+  already has credentials in the remote URL.
+- Docker is available and the daemon socket is mounted. Containers you start
+  are siblings of this one, not children. This workspace is mounted at the same
+  absolute path inside and outside this container, so relative bind mounts in a
+  compose file resolve correctly.
+- Ports a container publishes appear on the Docker host, not on this
+  container's localhost. Reach the stack at http://host.docker.internal:<port>.
+- Playwright and its browsers are installed. PLAYWRIGHT_BROWSERS_PATH is set.
+  Run headless.
+- Sub-agents are available. Delegate as your instructions describe.
+
+Reproduce the reported behaviour and report your findings to the issue. Do not
+fix it.
+
+Notes on this project:
+- The app is a Django/PostgreSQL stack. `docker compose up -d` from the repo
+  root brings it up on port 18120; reach it at http://host.docker.internal:18120.
+- `.env.example` is the template for `.env`. Demo accounts are seeded by
+  `python manage.py seed_demo` (SEED_DEMO_DATA=true does it on boot).
+- Clone the project fresh from GitLab rather than assuming a checkout exists.

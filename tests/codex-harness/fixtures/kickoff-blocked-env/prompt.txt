@@ -1,0 +1,5 @@
+$kickoff
+
+Build the project described in BRIEF.md.
+
+Note: this environment has no Docker daemon, no GitLab, and no network access.
