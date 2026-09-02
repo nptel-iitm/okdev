@@ -428,4 +428,4 @@ Create a feature branch from `main`, keep commits focused, run the verification 
 
 ## License
 
-This repository currently has no license file. No permission or license should be inferred from its absence.
+This project is licensed under the [MIT License](LICENSE).
