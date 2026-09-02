@@ -422,12 +422,6 @@ The following files are intentionally ignored and must not be committed:
 
 Use the committed `.env.example` files as templates. Do not put real passwords, API keys, or tokens in examples, documentation, commits, logs, or pull-request descriptions.
 
-## Breaking migration from MegaDev
-
-The OKDev identity is a clean breaking rename. Legacy `.megadev/` artifact directories, `/tmp/megadev-*` workspaces, `megadev-*` containers/tokens/backups, and the GitLab `megadev` namespace are not compatibility aliases and are not migrated automatically.
-
-Existing projects must be reinstalled to receive the new agent contracts. Preserve or manually move any legacy artifacts you still need, and deliberately migrate or recreate local GitLab projects under the `okdev` namespace. Existing Docker volumes and GitLab groups are left untouched unless you explicitly change them.
-
 ## Contributing
 
 Create a feature branch from `main`, keep commits focused, run the verification commands above, and open a GitHub pull request. Do not commit directly to `main`. Describe breaking changes and local credential/configuration changes prominently in the pull request.
